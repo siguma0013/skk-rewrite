@@ -20,11 +20,36 @@
   :type 'boolean
   :group 'skk-rewrite)
 
+;; 変換中文字列
+(defvar-local reskk-convert-buffer "")
+
+(defun reskk-observer ()
+  (interactive)
+
+  (let ((key last-command-event))
+    (message "HIT: %d => %s" key (char-to-string key))
+    )
+  )
+
+(defvar reskk-capture-map
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap [remap self-insert-command] #'reskk-observer)
+    keymap)
+  "コマンド以外を捕捉するキーマップ")
+
 ;;;###autoload
 (defun skk-rewrite-start ()
   "SKK 再実装を開始します (現在は何もしない)."
   (interactive)
-  (message "skk-rewrite loaded!"))
+  (message "skk-rewrite loaded!")
+  )
+
+(define-minor-mode reskk-mode
+  ""
+  :lighter "RE:SKK"
+  :keymap reskk-capture-map
+  (setq reskk-convert-buffer "")
+  )
 
 (provide 'skk-rewrite)
 
