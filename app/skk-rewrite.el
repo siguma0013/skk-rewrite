@@ -21,7 +21,7 @@
   :type 'boolean
   :group 'skk-rewrite)
 
-;; 変換中文字列
+;; 変換中バッファ
 (defvar-local reskk-convert-buffer "")
 
 (defun reskk-observer ()
@@ -31,12 +31,20 @@
           (char (char-to-string key)))
     (message "HIT: %d => %s" key char)
 
-    (setq hiragana (cdr (assoc char reskk-hiragana-convert-table)))
+    ;; 変換中バッファと新しい入力を結合
+    (setq-local reskk-convert-buffer (concat reskk-convert-buffer char))
+
+    ;; 変換テーブルを検索
+    (setq-local hiragana (cdr (assoc reskk-convert-buffer reskk-hiragana-convert-table)))
 
     (if hiragana
+      ;; マッチ時
       (progn
         (message "CONVERT:%s" hiragana)
-        (insert hiragana))
+        (insert hiragana)
+        ;; 変換中バッファのリセット
+        (setq-local reskk-convert-buffer "")
+        )
       )
     )
   )
