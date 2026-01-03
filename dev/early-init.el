@@ -1,3 +1,7 @@
+;; スタートアップメッセージの非表示
+(setq inhibit-startup-message t)
+
+;; package.elの無効化
 (setq package-enable-at-startup nil)
 
 ;; START >> elpaca installer
