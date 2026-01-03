@@ -22,7 +22,7 @@
   :group 'skk-rewrite)
 
 ;; 変換中バッファ
-(defvar-local reskk-convert-buffer "")
+(defvar-local reskk-convert-buffer nil)
 ;; 変換中オーバーレイ
 (defvar-local reskk-overlay nil)
 
@@ -45,7 +45,7 @@
         (message "CONVERT:%s" hiragana)
         (insert hiragana)
         ;; 変換中バッファのリセット
-        (setq-local reskk-convert-buffer "")
+        (setq-local reskk-convert-buffer nil)
         )
       )
 
@@ -54,16 +54,46 @@
       (delete-overlay reskk-overlay)
       )
 
-    (setq-local reskk-overlay (make-overlay (point) (point)))
-    (setq-local styled-text (propertize reskk-convert-buffer
-                              'face '(:background "orange" :foreground "red" :weight bold)))
-    (overlay-put reskk-overlay 'after-string styled-text)
+    (when reskk-convert-buffer
+      (setq-local reskk-overlay (make-overlay (point) (point)))
+      (setq-local styled-text (propertize reskk-convert-buffer
+                                'face '(:background "orange" :foreground "red" :weight bold)))
+      (overlay-put reskk-overlay 'after-string styled-text)
+      )
+    )
+  )
+
+(defun reskk-backward-char ()
+  "delete-backward-charのオーバーライド関数"
+  (interactive)
+
+  (if reskk-convert-buffer
+    ;; 変換中バッファに文字列がある時
+    (progn
+      (setq-local reskk-convert-buffer (substring reskk-convert-buffer 0 -1))
+      ;; 変換中オーバーレイ更新のために一旦削除
+      (when reskk-overlay
+        (delete-overlay reskk-overlay)
+        )
+
+      (setq-local reskk-overlay (make-overlay (point) (point)))
+      (setq-local styled-text (propertize reskk-convert-buffer
+                                'face '(:background "orange" :foreground "red" :weight bold)))
+      (overlay-put reskk-overlay 'after-string styled-text)
+      )
+
+    ;; 変換中バッファが空の時
+    (call-interactively #'delete-backward-char)
     )
   )
 
 (defvar reskk-capture-map
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap [remap self-insert-command] #'reskk-observer)
+
+    ;; 削除系コマンドのオーバーライド
+    (define-key keymap [remap delete-backward-char] #'reskk-backward-char)
+    (define-key keymap [remap backward-delete-char-untabify] #'reskk-backward-char)
     keymap)
   "コマンド以外を捕捉するキーマップ")
 
