@@ -11,6 +11,7 @@
 
 ;;; Code:
 (require 'reskk-convert-rule)
+(require 'reskk-overlay)
 
 (defgroup skk-rewrite nil
   "SKK 再実装用の設定グループ."
@@ -23,8 +24,6 @@
 
 ;; 変換中バッファ
 (defvar-local reskk-convert-buffer nil)
-;; 変換中オーバーレイ
-(defvar-local reskk-overlay nil)
 
 (defun reskk-observer ()
   (interactive)
@@ -49,17 +48,7 @@
         )
       )
 
-    ;; 変換中オーバーレイ更新のために一旦削除
-    (when reskk-overlay
-      (delete-overlay reskk-overlay)
-      )
-
-    (when reskk-convert-buffer
-      (setq-local reskk-overlay (make-overlay (point) (point)))
-      (setq-local styled-text (propertize reskk-convert-buffer
-                                'face '(:background "orange" :foreground "red" :weight bold)))
-      (overlay-put reskk-overlay 'after-string styled-text)
-      )
+    (reskk-display-overlay reskk-convert-buffer)
     )
   )
 
@@ -71,15 +60,7 @@
     ;; 変換中バッファに文字列がある時
     (progn
       (setq-local reskk-convert-buffer (substring reskk-convert-buffer 0 -1))
-      ;; 変換中オーバーレイ更新のために一旦削除
-      (when reskk-overlay
-        (delete-overlay reskk-overlay)
-        )
-
-      (setq-local reskk-overlay (make-overlay (point) (point)))
-      (setq-local styled-text (propertize reskk-convert-buffer
-                                'face '(:background "orange" :foreground "red" :weight bold)))
-      (overlay-put reskk-overlay 'after-string styled-text)
+      (reskk-display-overlay reskk-convert-buffer)
       )
 
     ;; 変換中バッファが空の時
