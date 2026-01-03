@@ -23,6 +23,8 @@
 
 ;; 変換中バッファ
 (defvar-local reskk-convert-buffer "")
+;; 変換中オーバーレイ
+(defvar-local reskk-overlay nil)
 
 (defun reskk-observer ()
   (interactive)
@@ -46,6 +48,16 @@
         (setq-local reskk-convert-buffer "")
         )
       )
+
+    ;; 変換中オーバーレイ更新のために一旦削除
+    (when reskk-overlay
+      (delete-overlay reskk-overlay)
+      )
+
+    (setq-local reskk-overlay (make-overlay (point) (point)))
+    (setq-local styled-text (propertize reskk-convert-buffer
+                              'face '(:background "orange" :foreground "red" :weight bold)))
+    (overlay-put reskk-overlay 'after-string styled-text)
     )
   )
 
