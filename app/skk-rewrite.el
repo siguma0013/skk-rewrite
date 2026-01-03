@@ -56,7 +56,7 @@
   "delete-backward-charのオーバーライド関数"
   (interactive)
 
-  (if reskk-convert-buffer
+  (if (> (length reskk-convert-buffer) 0)
     ;; 変換中バッファに文字列がある時
     (progn
       (setq-local reskk-convert-buffer (substring reskk-convert-buffer 0 -1))
