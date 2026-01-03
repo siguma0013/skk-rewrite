@@ -10,6 +10,7 @@
 
 
 ;;; Code:
+(require 'reskk-convert-rule)
 
 (defgroup skk-rewrite nil
   "SKK 再実装用の設定グループ."
@@ -26,8 +27,17 @@
 (defun reskk-observer ()
   (interactive)
 
-  (let ((key last-command-event))
-    (message "HIT: %d => %s" key (char-to-string key))
+  (let* ((key last-command-event)
+          (char (char-to-string key)))
+    (message "HIT: %d => %s" key char)
+
+    (setq hiragana (cdr (assoc char reskk-hiragana-convert-table)))
+
+    (if hiragana
+      (progn
+        (message "CONVERT:%s" hiragana)
+        (insert hiragana))
+      )
     )
   )
 
