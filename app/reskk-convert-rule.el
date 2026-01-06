@@ -56,24 +56,18 @@
 
 ;; 一致判定関数
 (defun reskk-state-trie (trie key)
-  (let ((node trie))
-    (catch 'fail
+  (cl-block state
+    (let ((node trie))
+      ;; トライ木を検索
       (dolist (char (string-to-list key))
         (setq node (gethash char (reskk-trie-children node)))
-        (unless node (throw 'fail :invalid))
-        )
+        (unless node (cl-return-from state :invalid)))
 
-      (cond
-        ;; 値あり＆ノードあり
-        ((and (reskk-trie-value node)
-           (> (hash-table-count (reskk-trie-children node)) 0)
-           )
-          :commit-or-wait)
-        ;; 値あり＆ノードなし
-        ((reskk-trie-value node)
-          :commit)
-        ;; 値なし＆ノードあり
-        (t :wait)
+      (if (zerop (hash-table-count (reskk-trie-children node)))
+        ;; 子ノードなし(変換確定)
+        (cl-return-from state :commit)
+        ;; 子ノードあり(変換保留)
+        (cl-return-from state :wait)
         )
       )
     )

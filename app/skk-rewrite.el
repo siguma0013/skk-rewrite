@@ -37,11 +37,15 @@
 
     (when (eq :commit (reskk-state-trie reskk-convert-trie reskk-convert-buffer))
       ;; マッチ時
-      (setq-local hiragana (reskk-trie-value (reskk-find-trie reskk-convert-trie reskk-convert-buffer)))
+      (setq-local node (reskk-find-trie reskk-convert-trie reskk-convert-buffer))
+
+      (setq-local hiragana (reskk-trie-value node))
+      (setq-local pending (reskk-trie-pending node))
+
       (message "CONVERT:%s" hiragana)
       (insert hiragana)
       ;; 変換中バッファのリセット
-      (setq-local reskk-convert-buffer nil)
+      (setq-local reskk-convert-buffer pending)
       )
 
     (reskk-display-overlay reskk-convert-buffer)
