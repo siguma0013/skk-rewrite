@@ -35,17 +35,13 @@
     ;; 変換中バッファと新しい入力を結合
     (setq-local reskk-convert-buffer (concat reskk-convert-buffer char))
 
-    ;; 変換テーブルを検索
-    (setq-local hiragana (cdr (assoc reskk-convert-buffer reskk-hiragana-convert-table)))
-
-    (if hiragana
+    (when (eq :commit (reskk-state-trie reskk-convert-trie reskk-convert-buffer))
       ;; マッチ時
-      (progn
-        (message "CONVERT:%s" hiragana)
-        (insert hiragana)
-        ;; 変換中バッファのリセット
-        (setq-local reskk-convert-buffer nil)
-        )
+      (setq-local hiragana (reskk-trie-value (reskk-find-trie reskk-convert-trie reskk-convert-buffer)))
+      (message "CONVERT:%s" hiragana)
+      (insert hiragana)
+      ;; 変換中バッファのリセット
+      (setq-local reskk-convert-buffer nil)
       )
 
     (reskk-display-overlay reskk-convert-buffer)
