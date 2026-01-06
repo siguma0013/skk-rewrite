@@ -43,11 +43,10 @@
     )
   )
 
-(defun reskk-find-trie (trie key)
+(defun reskk--find-node (root key)
   "木構造(trie)の完全一致検索関数"
   (cl-block find-node
-    (let ((node trie))
-      ;; トライ木を検索
+    (let ((node root))
       (dolist (char (string-to-list key))
         (setq node (gethash char (reskk-convert-tree-children node)))
         (unless node (cl-return-from find-node nil)))
@@ -56,6 +55,10 @@
       )
     )
   )
+
+(defun reskk-find-node (key)
+  "規定の完全一致検索関数"
+  (reskk--find-node reskk-convert-trie key))
 
 (defun reskk-state-trie (trie key)
   "変換可能判定関数"

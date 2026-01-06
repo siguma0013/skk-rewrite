@@ -37,7 +37,7 @@
 
     (when (eq :commit (reskk-state-trie reskk-convert-trie reskk-convert-buffer))
       ;; マッチ時
-      (setq-local node (reskk-find-trie reskk-convert-trie reskk-convert-buffer))
+      (setq-local node (reskk-find-node reskk-convert-buffer))
 
       (setq-local hiragana (reskk-convert-tree-value node))
       (setq-local pending (reskk-convert-tree-pending node))
