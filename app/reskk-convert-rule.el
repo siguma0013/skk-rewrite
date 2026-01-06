@@ -60,24 +60,17 @@
   "規定の完全一致検索関数"
   (reskk--find-node reskk-convert-trie key))
 
-(defun reskk-state-trie (trie key)
-  "変換可能判定関数"
-  (cl-block state
-    (let ((node trie))
-      ;; トライ木を検索
-      (dolist (char (string-to-list key))
-        (setq node (gethash char (reskk-convert-tree-children node)))
-        (unless node (cl-return-from state :invalid)))
+(defun reskk-tree-is-leaf (node)
+  "ノードが末端であるかの判定関数"
+  (zerop (hash-table-count (reskk-convert-tree-children node))))
 
-      (if (zerop (hash-table-count (reskk-convert-tree-children node)))
-        ;; 子ノードなし(変換確定)
-        (cl-return-from state :commit)
-        ;; 子ノードあり(変換保留)
-        (cl-return-from state :wait)
-        )
-      )
-    )
-  )
+(defun reskk-tree-get-value (leaf)
+  "ノードから出力文字列を取得するインターフェース"
+  (reskk-convert-tree-value leaf))
+
+(defun reskk-tree-get-pending (leaf)
+  "ノードから未消費文字列を取得するインターフェース"
+  (reskk-convert-tree-pending leaf))
 
 (setq reskk-convert-trie (reskk-make-trie))
 

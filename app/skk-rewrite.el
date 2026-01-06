@@ -35,17 +35,17 @@
     ;; 変換中バッファと新しい入力を結合
     (setq-local reskk-convert-buffer (concat reskk-convert-buffer char))
 
-    (when (eq :commit (reskk-state-trie reskk-convert-trie reskk-convert-buffer))
-      ;; マッチ時
-      (setq-local node (reskk-find-node reskk-convert-buffer))
+    (when-let* ((node (reskk-find-node reskk-convert-buffer))
+                 (is-leaf (reskk-tree-is-leaf node)))
+      ;; ノードが取得可能 かつ 末端のとき
+      (let ((value (reskk-tree-get-value node))
+             (pending (reskk-tree-get-pending node)))
 
-      (setq-local hiragana (reskk-convert-tree-value node))
-      (setq-local pending (reskk-convert-tree-pending node))
-
-      (message "CONVERT:%s" hiragana)
-      (insert hiragana)
-      ;; 変換中バッファのリセット
-      (setq-local reskk-convert-buffer pending)
+        (message "CONVERT:%s" value)
+        (insert value)
+        ;; 変換中バッファのリセット
+        (setq-local reskk-convert-buffer pending)
+        )
       )
 
     (reskk-display-overlay reskk-convert-buffer)
