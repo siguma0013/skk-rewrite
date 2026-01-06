@@ -8,47 +8,48 @@
 ;; child 子ノード
 ;; value 出力文字列
 ;; pending 未消費文字列
-(cl-defstruct reskk-trie
+(cl-defstruct reskk-convert-tree
+  "木構造(trie)による変換テーブル"
   children
   value
   pending)
 
-;; ノード作成関数
 (defun reskk-make-trie ()
-  (make-reskk-trie
+  "木構造(trie)のノード作成関数"
+  (make-reskk-convert-tree
     :children (make-hash-table :test 'equal)
     :value nil
     :pending nil)
   )
 
-;; キー登録関数
 (defun reskk-insert-trie (trie key value pending)
+  "木構造(trie)のキー登録関数"
   (let ((node trie))
     (dolist (char (string-to-list key))
       (setq node
         (or
-          (gethash char (reskk-trie-children node))
+          (gethash char (reskk-convert-tree-children node))
           (puthash char
             (reskk-make-trie)
-            (reskk-trie-children node)
+            (reskk-convert-tree-children node)
             )
           )
         )
       )
 
     ;; 終端登録
-    (setf (reskk-trie-value node) value)
-    (setf (reskk-trie-pending node) pending)
+    (setf (reskk-convert-tree-value node) value)
+    (setf (reskk-convert-tree-pending node) pending)
     )
   )
 
-;; 完全一致検索
 (defun reskk-find-trie (trie key)
+  "木構造(trie)の完全一致検索関数"
   (cl-block find-node
     (let ((node trie))
       ;; トライ木を検索
       (dolist (char (string-to-list key))
-        (setq node (gethash char (reskk-trie-children node)))
+        (setq node (gethash char (reskk-convert-tree-children node)))
         (unless node (cl-return-from find-node nil)))
 
       (cl-return-from find-node node)
@@ -56,16 +57,16 @@
     )
   )
 
-;; 一致判定関数
 (defun reskk-state-trie (trie key)
+  "変換可能判定関数"
   (cl-block state
     (let ((node trie))
       ;; トライ木を検索
       (dolist (char (string-to-list key))
-        (setq node (gethash char (reskk-trie-children node)))
+        (setq node (gethash char (reskk-convert-tree-children node)))
         (unless node (cl-return-from state :invalid)))
 
-      (if (zerop (hash-table-count (reskk-trie-children node)))
+      (if (zerop (hash-table-count (reskk-convert-tree-children node)))
         ;; 子ノードなし(変換確定)
         (cl-return-from state :commit)
         ;; 子ノードあり(変換保留)

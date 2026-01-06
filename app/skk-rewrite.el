@@ -39,8 +39,8 @@
       ;; マッチ時
       (setq-local node (reskk-find-trie reskk-convert-trie reskk-convert-buffer))
 
-      (setq-local hiragana (reskk-trie-value node))
-      (setq-local pending (reskk-trie-pending node))
+      (setq-local hiragana (reskk-convert-tree-value node))
+      (setq-local pending (reskk-convert-tree-pending node))
 
       (message "CONVERT:%s" hiragana)
       (insert hiragana)
