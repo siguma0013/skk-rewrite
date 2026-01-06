@@ -44,13 +44,15 @@
 
 ;; 完全一致検索
 (defun reskk-find-trie (trie key)
-  (let ((node trie))
-    (catch 'fail
+  (cl-block find-node
+    (let ((node trie))
+      ;; トライ木を検索
       (dolist (char (string-to-list key))
         (setq node (gethash char (reskk-trie-children node)))
-        (unless node (throw 'fail nil))
-        )
-      node)
+        (unless node (cl-return-from find-node nil)))
+
+      (cl-return-from find-node node)
+      )
     )
   )
 
