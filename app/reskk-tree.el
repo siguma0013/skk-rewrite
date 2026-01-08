@@ -259,6 +259,4 @@
 (reskk-insert-trie reskk-convert-trie "pyu" "ぴゅ" nil)
 (reskk-insert-trie reskk-convert-trie "pyo" "ぴょ" nil)
 
-(provide 'reskk-convert-rule)
-
-;;; reskk-convert-rule.el ends here
+(provide 'reskk-tree)

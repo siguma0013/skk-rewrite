@@ -10,9 +10,8 @@
 
 
 ;;; Code:
-(require 'reskk-convert-rule)
 (require 'reskk-overlay)
-(require 'reskk-state)
+(require 'reskk-input)
 
 (defgroup skk-rewrite nil
   "SKK 再実装用の設定グループ."
@@ -23,53 +22,12 @@
   :type 'boolean
   :group 'skk-rewrite)
 
-;; 変換中バッファ
-(defvar-local reskk-convert-buffer nil)
-
 ;; HALF-ALPHABET:半角英数
 ;; FULL-ALPHABET:全角英数
 ;; HIRAGANA:ひらがな
 ;; KATAKANA:カタカナ
 (defvar-local reskk-state 'HALF-ALPHABET
   "SKKモード")
-
-(defun reskk-observer ()
-  (interactive)
-
-  (let* ((key last-command-event)
-          (char (char-to-string key))
-          (buffer (concat reskk-convert-buffer char))
-          (node (reskk-find-node buffer)))
-    (message "HIT: %d => %s" key char)
-
-    (cond
-      ((null node)                      ; ノードが取得できなかったとき
-        (setq-local reskk-convert-buffer char))
-      ((reskk-tree-is-leaf node)        ; ノード末端のとき
-        (insert (reskk-tree-get-value node))
-        (setq-local reskk-convert-buffer (reskk-tree-get-pending node)))
-      (t                                ; ノード途中のとき
-        (setq-local reskk-convert-buffer buffer))
-      )
-    )
-  (reskk-display-overlay reskk-convert-buffer)
-  )
-
-(defun reskk-backward-char ()
-  "delete-backward-charのオーバーライド関数"
-  (interactive)
-
-  (if (> (length reskk-convert-buffer) 0)
-    ;; 変換中バッファに文字列がある時
-    (progn
-      (setq-local reskk-convert-buffer (substring reskk-convert-buffer 0 -1))
-      (reskk-display-overlay reskk-convert-buffer)
-      )
-
-    ;; 変換中バッファが空の時
-    (call-interactively #'delete-backward-char)
-    )
-  )
 
 (defun reskk--mode-line ()
   "モードライン文字列決定関数"
@@ -147,7 +105,6 @@
     ;; マイナーモード無効化時
     (setq minor-mode-overriding-map-alist (assq-delete-all 'reskk-mode minor-mode-overriding-map-alist))
     )
-  (setq reskk-convert-buffer "")
   )
 
 (provide 'skk-rewrite)
