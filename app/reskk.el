@@ -1,4 +1,4 @@
-;;; skk-rewrite.el --- SKK 再実装 (最小構成) -*- lexical-binding: t; -*-
+;;; reskk.el --- SKK 再実装 (最小構成) -*- lexical-binding: t; -*-
 
 ;; Author: Your Name
 ;; Version: 0.1
@@ -90,12 +90,6 @@
   (reskk--set-state 'HIRAGANA))
 
 ;;;###autoload
-(defun skk-rewrite-start ()
-  "SKK 再実装を開始します (現在は何もしない)."
-  (interactive)
-  (message "skk-rewrite loaded!")
-  )
-
 (define-minor-mode reskk-mode
   ""
   :lighter (:eval (reskk--mode-line))
@@ -107,6 +101,4 @@
     )
   )
 
-(provide 'skk-rewrite)
-
-;;; skk-rewrite.el ends here
+(provide 'reskk)
