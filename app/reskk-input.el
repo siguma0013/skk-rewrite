@@ -5,6 +5,7 @@
 
 ;;; Code:
 (require 'reskk-tree)
+(require 'reskk-overlay)
 
 (defvar-local reskk--convert-buffer nil
   "変換中バッファ")

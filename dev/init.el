@@ -13,6 +13,4 @@
 
 
 ;; パッケージの読み込み
-(require 'skk-rewrite)
-
-(skk-rewrite-start)
+(require 'reskk)

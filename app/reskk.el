@@ -10,7 +10,6 @@
 
 
 ;;; Code:
-(require 'reskk-overlay)
 (require 'reskk-input)
 
 (defgroup skk-rewrite nil
