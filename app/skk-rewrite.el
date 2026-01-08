@@ -29,27 +29,22 @@
   (interactive)
 
   (let* ((key last-command-event)
-          (char (char-to-string key)))
+          (char (char-to-string key))
+          (buffer (concat reskk-convert-buffer char))
+          (node (reskk-find-node buffer)))
     (message "HIT: %d => %s" key char)
 
-    ;; 変換中バッファと新しい入力を結合
-    (setq-local reskk-convert-buffer (concat reskk-convert-buffer char))
-    )
-
-  (when-let* ((node (reskk-find-node reskk-convert-buffer))
-               (is-leaf (reskk-tree-is-leaf node)))
-    ;; ノードが取得可能 かつ 末端のとき
-    (let ((value (reskk-tree-get-value node))
-           (pending (reskk-tree-get-pending node)))
-
-      (message "CONVERT:%s" value)
-      (insert value)
-      ;; 変換中バッファのリセット
-      (setq-local reskk-convert-buffer pending)
+    (cond
+      ((null node)                      ; ノードが取得できなかったとき
+        (setq-local reskk-convert-buffer char))
+      ((reskk-tree-is-leaf node)        ; ノード末端のとき
+        (insert (reskk-tree-get-value node))
+        (setq-local reskk-convert-buffer (reskk-tree-get-pending node)))
+      (t                                ; ノード途中のとき
+        (setq-local reskk-convert-buffer buffer))
       )
     )
-
-    (reskk-display-overlay reskk-convert-buffer)
+  (reskk-display-overlay reskk-convert-buffer)
   )
 
 (defun reskk-backward-char ()
