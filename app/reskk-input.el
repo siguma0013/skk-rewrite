@@ -11,6 +11,7 @@
 (defvar-local reskk-convert-buffer nil)
 
 (defun reskk-observer ()
+  ""
   (interactive)
 
   (let* ((key last-command-event)       ; キーコード

@@ -21,15 +21,15 @@
   :type 'boolean
   :group 'skk-rewrite)
 
+;; SKKモード
 ;; HALF-ALPHABET:半角英数
 ;; FULL-ALPHABET:全角英数
 ;; HIRAGANA:ひらがな
 ;; KATAKANA:カタカナ
-(defvar-local reskk-state 'HALF-ALPHABET
-  "SKKモード")
+(defvar-local reskk-state 'HALF-ALPHABET)
 
-(defun reskk--mode-line ()
-  "モードライン文字列決定関数"
+;; モードライン文字列決定関数
+(defun reskk-mode-line ()
   (when reskk-mode
     (pcase reskk-state
       ('HALF-ALPHABET " SKK[aA]")
@@ -53,48 +53,48 @@
 (define-key reskk-hiragana-keymap [remap delete-backward-char] #'reskk-backward-char)
 (define-key reskk-hiragana-keymap [remap backward-delete-char-untabify] #'reskk-backward-char)
 
-(defun reskk--keymap ()
-  "キーマップ決定関数"
+;; キーマップ決定関数
+(defun reskk-keymap ()
   (pcase reskk-state
     ('HALF-ALPHABET reskk-half-alphabet-keymap)
     ('HIRAGANA reskk-hiragana-keymap)))
 
-(defun reskk--update-keymap ()
-  "キーマップ更新関数"
+;; キーマップ更新関数
+(defun reskk-update-keymap ()
   (let ((entry (assq 'skk-rewrite-mode minor-mode-overriding-map-alist)))
     ;; minor-mode-overriding-map-alistに〜
     (if entry
       ;; 登録済のとき
-      (setcdr entry (reskk--keymap))
+      (setcdr entry (reskk-keymap))
       ;; 未登録のとき
-      (push `(reskk-mode . ,(reskk--keymap)) minor-mode-overriding-map-alist)
+      (push `(reskk-mode . ,(reskk-keymap)) minor-mode-overriding-map-alist)
       )
     )
   )
 
-(defun reskk--set-state (state)
-  "SKKモード変更関数"
+;; SKKモード変更関数
+(defun reskk-set-state (state)
   (setq-local reskk-state state)
-  (reskk--update-keymap)
+  (reskk-update-keymap)
   (force-mode-line-update))
 
 (defun reskk-activate-half-alphabet ()
   "SKKモードを半角英数モードに変更するコマンド"
   (interactive)
-  (reskk--set-state 'HALF-ALPHABET))
+  (reskk-set-state 'HALF-ALPHABET))
 
 (defun reskk-activate-hiragana ()
   "SKKモードをひらがなモードに変更するコマンド"
   (interactive)
-  (reskk--set-state 'HIRAGANA))
+  (reskk-set-state 'HIRAGANA))
 
 ;;;###autoload
 (define-minor-mode reskk-mode
   ""
-  :lighter (:eval (reskk--mode-line))
+  :lighter (:eval (reskk-mode-line))
   (if reskk-mode
     ;; マイナーモード有効化時
-    (reskk--update-keymap)
+    (reskk-update-keymap)
     ;; マイナーモード無効化時
     (setq minor-mode-overriding-map-alist (assq-delete-all 'reskk-mode minor-mode-overriding-map-alist))
     )

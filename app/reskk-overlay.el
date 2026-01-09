@@ -8,9 +8,8 @@
 ;; 変換中オーバーレイ
 (defvar-local reskk-overlay nil)
 
+;; オーバーレイ表示関数
 (defun reskk-display-overlay (text)
-  "オーバーレイ表示関数"
-
   ;; 変換中オーバーレイ更新のために一旦削除
   (when reskk-overlay
     (delete-overlay reskk-overlay))
