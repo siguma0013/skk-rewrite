@@ -61,7 +61,7 @@
 
 ;; キーマップ更新関数
 (defun reskk-update-keymap ()
-  (let ((entry (assq 'skk-rewrite-mode minor-mode-overriding-map-alist)))
+  (let ((entry (assq 'reskk-mode minor-mode-overriding-map-alist)))
     ;; minor-mode-overriding-map-alistに〜
     (if entry
       ;; 登録済のとき
