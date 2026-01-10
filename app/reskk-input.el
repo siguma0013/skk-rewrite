@@ -11,27 +11,58 @@
 ;; かな変換中バッファ
 (defvar-local reskk-convert-buffer nil)
 
-(defun reskk-observer ()
-  ""
+(defun reskk-insert-hiragana ()
+  "ひらがな入力コマンド"
   (interactive)
+  (reskk-insert-kana
+    (lambda (node)
+      (insert (reskk-tree-node-value node))
+      )))
 
-  (let* ((key last-command-event)       ; キーコード
-          (char (char-to-string key))   ; 入力文字列
+(defun reskk-insert-katakana ()
+  "カタカナ入力コマンド"
+  (interactive)
+  (reskk-insert-kana
+    (lambda (node)
+      ;; ひらがな => カタカナ変換のために一度変数で受ける
+      (let ((value (reskk-tree-node-value node)))
+        ;; 変換して出力
+        (insert (reskk-convert-hiragana-to-katakana value))
+        ))))
+
+;; ひらがなorカタカナ入力関数
+(defun reskk-insert-kana (call-back)
+  (let* ((keycode last-command-event)       ; キーコード
+          (char (char-to-string keycode))   ; 入力文字列
           (buffer (concat reskk-convert-buffer char)) ; かな変換中文字列
           (node (reskk-find-node buffer)))            ; 木構造の検索結果
-    (message "HIT: %d => %s" key char)
+    (message "HIT: %d => %s" keycode char)
 
     (cond
       ((null node)                      ; ノードが取得できなかったとき
         (setq-local reskk-convert-buffer char))
       ((reskk-tree-is-leaf node)        ; ノードが末端のとき
-        (insert (reskk-tree-node-value node))
+        (funcall call-back node)
         (setq-local reskk-convert-buffer (reskk-tree-node-pending node)))
       (t                                ; ノードが途中のとき
         (setq-local reskk-convert-buffer buffer))
       )
     )
   (reskk-display-overlay reskk-convert-buffer)
+  )
+
+;; ひらがなをカタカナに変換する関数
+(defun reskk-convert-hiragana-to-katakana (hiragana)
+  (apply 'string
+    (mapcar
+      (lambda (char)
+        (if (and (>= char #x3041) (<= char #x3096))
+          (+ char (- #x30A1 #x3041))
+          char
+          )
+        )
+      (string-to-list hiragana))
+    )
   )
 
 (defun reskk-backward-char ()

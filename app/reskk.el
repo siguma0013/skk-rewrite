@@ -12,14 +12,14 @@
 ;;; Code:
 (require 'reskk-input)
 
-(defgroup skk-rewrite nil
-  "SKK 再実装用の設定グループ."
+(defgroup reskk-mode nil
+  "Re:SKKの設定グループ."
   :group 'input)
 
 (defcustom skk-rewrite-dummy t
   "何もしないダミー変数."
   :type 'boolean
-  :group 'skk-rewrite)
+  :group 'reskk-mode)
 
 ;; SKKモード
 ;; HALF-ALPHABET:半角英数
@@ -45,19 +45,42 @@
   "C-j" #'reskk-activate-hiragana)
 
 (defvar-keymap reskk-hiragana-keymap
-  :doc "SKKモードがひらがなモードの際に使用するキーマップ"
-  "C-j" #'reskk-activate-half-alphabet)
+  :doc "SKKモードがひらがなモードの際に使用するキーマップ")
 
-(define-key reskk-hiragana-keymap [remap self-insert-command] #'reskk-observer)
+(defvar-keymap reskk-katakana-keymap
+  :doc "SKKモードがカタカナモードの際に使用するキーマップ")
+
+(define-key reskk-hiragana-keymap [remap self-insert-command] #'reskk-insert)
 ;; 削除系コマンドのオーバーライド
 (define-key reskk-hiragana-keymap [remap delete-backward-char] #'reskk-backward-char)
 (define-key reskk-hiragana-keymap [remap backward-delete-char-untabify] #'reskk-backward-char)
+
+
+(cl-loop for count from ?a to ?z do
+  (message "KEY:%d => %s" count (char-to-string count))
+  (define-key reskk-hiragana-keymap (char-to-string count) #'reskk-insert-hiragana)
+  (define-key reskk-katakana-keymap (char-to-string count) #'reskk-insert-katakana)
+  )
+(cl-loop for count from ?A to ?Z do
+  (message "KEY:%d => %s" count (char-to-string count))
+  )
+
+(progn
+  (keymap-set reskk-hiragana-keymap "l" #'reskk-activate-half-alphabet)
+  (keymap-set reskk-hiragana-keymap "q" #'reskk-activate-katakana)
+  )
+
+(progn
+  (keymap-set reskk-katakana-keymap "l" #'reskk-activate-half-alphabet)
+  (keymap-set reskk-katakana-keymap "q" #'reskk-activate-katakana)
+  )
 
 ;; キーマップ決定関数
 (defun reskk-keymap ()
   (pcase reskk-state
     ('HALF-ALPHABET reskk-half-alphabet-keymap)
-    ('HIRAGANA reskk-hiragana-keymap)))
+    ('HIRAGANA reskk-hiragana-keymap)
+    ('KATAKANA reskk-katakana-keymap)))
 
 ;; キーマップ更新関数
 (defun reskk-update-keymap ()
@@ -87,6 +110,11 @@
   "SKKモードをひらがなモードに変更するコマンド"
   (interactive)
   (reskk-set-state 'HIRAGANA))
+
+(defun reskk-activate-katakana ()
+  "SKKモードをカタカナモードに変更するコマンド"
+  (interactive)
+  (reskk-set-state 'KATAKANA))
 
 ;;;###autoload
 (define-minor-mode reskk-mode
