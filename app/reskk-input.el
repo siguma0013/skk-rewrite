@@ -6,6 +6,7 @@
 ;;; Code:
 (require 'reskk-tree)
 (require 'reskk-overlay)
+(require 'reskk-dictionary)
 
 ;; かな変換中バッファ
 (defvar-local reskk-convert-buffer nil)
