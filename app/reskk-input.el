@@ -11,6 +11,21 @@
 ;; かな変換中バッファ
 (defvar-local reskk-convert-buffer nil)
 
+(defun reskk-insert ()
+  "単純変換入力コマンド"
+  (interactive)
+  (let* ((keycode last-command-event)
+          (char (char-to-string keycode))
+          (node (reskk-find-node char)))
+    ;; バッファを完全リセット
+    (setq-local reskk-convert-buffer nil)
+    (if node
+      ;; ノードが取得できたとき
+      (insert (reskk-tree-node-value node))
+      ;; ノードが取得できなかったとき
+      (insert char))
+    ))
+
 (defun reskk-insert-hiragana ()
   "ひらがな入力コマンド"
   (interactive)

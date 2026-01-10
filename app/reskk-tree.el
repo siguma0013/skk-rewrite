@@ -252,4 +252,12 @@
 (reskk-insert-trie reskk-tree "pyu" "ぴゅ" nil)
 (reskk-insert-trie reskk-tree "pyo" "ぴょ" nil)
 
+
+;; 記号
+(reskk-insert-trie reskk-tree "," "、" nil)
+(reskk-insert-trie reskk-tree "." "。" nil)
+(reskk-insert-trie reskk-tree "-" "ー" nil)
+(reskk-insert-trie reskk-tree "!" "！" nil)
+(reskk-insert-trie reskk-tree "?" "？" nil)
+
 (provide 'reskk-tree)
