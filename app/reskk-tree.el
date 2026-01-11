@@ -1,12 +1,9 @@
-;;; reskk-tree.el --- skkかな変換木構造 -*- lexical-binding: t; -*-
+;;; reskk-tree.el --- かな変換木構造 -*- lexical-binding: t; -*-
 
 ;;; Code:
 (require 'cl-lib)
 
-;; かな変換用木構造(trie)
-(defvar reskk-tree nil)
-
-;; reskk-treeのノード定義
+;; かな変換木構造のノード定義
 ;; [children] 子ノード
 ;; [value]    出力文字列
 ;; [pending]  未消費文字列
@@ -23,8 +20,11 @@
     :pending nil)
   )
 
-;; reskk-treeへのノード登録関数
-(defun reskk-insert-trie (trie key value pending)
+;; かな変換木構造
+(defconst reskk-tree (reskk-make-node))
+
+;; 木構造へのノード登録関数
+(defun reskk-insert-something-node (trie key value pending)
   (let ((node trie))
     (dolist (char (string-to-list key))
       (setq node
@@ -43,6 +43,10 @@
     (setf (reskk-tree-node-pending node) pending)
     )
   )
+
+;; ノード登録関数のショートハンド
+(defun reskk-insert-node (key value)
+  (reskk-insert-something-node reskk-tree key value nil))
 
 ;; 木構造の検索関数(完全一致)
 (defun reskk-find-something-node (root key)
@@ -65,199 +69,75 @@
 (defun reskk-tree-is-leaf (node)
   (zerop (hash-table-count (reskk-tree-node-children node))))
 
-(setq reskk-tree (reskk-make-node))
+;; 木構造のデータエントリ
+(defconst reskk-tree-entries
+  '(
+     ;; 五十音
+     ( "a" "あ") ( "i" "い") ( "u" "う") ( "e" "え") ( "o" "お")
+     ("ka" "か") ("ki" "き") ("ku" "く") ("ke" "け") ("ko" "こ")
+     ("sa" "さ") ("si" "し") ("su" "す") ("se" "せ") ("so" "そ")
+     ("ta" "た") ("ti" "ち") ("tu" "つ") ("te" "て") ("to" "と")
+     ("na" "な") ("ni" "に") ("nu" "ぬ") ("ne" "ね") ("no" "の")
+     ("ha" "は") ("hi" "ひ") ("hu" "ふ") ("he" "へ") ("ho" "ほ")
+     ("ma" "ま") ("mi" "み") ("mu" "む") ("me" "め") ("mo" "も")
+     ("ya" "や")             ("yu" "ゆ")             ("yo" "よ")
+     ("ra" "ら") ("ri" "り") ("ru" "る") ("re" "れ") ("ro" "ろ")
+     ("wa" "わ")                                     ("wo" "を")
+     ("nn" "ん")
 
-;; あ行
-(reskk-insert-trie reskk-tree "a" "あ" nil)
-(reskk-insert-trie reskk-tree "i" "い" nil)
-(reskk-insert-trie reskk-tree "u" "う" nil)
-(reskk-insert-trie reskk-tree "e" "え" nil)
-(reskk-insert-trie reskk-tree "o" "お" nil)
+     ;; 濁音、半濁音
+     ("ga" "が") ("gi" "ぎ") ("gu" "ぐ") ("ge" "げ") ("go" "ご")
+     ("za" "ざ") ("zi" "じ") ("zu" "ず") ("ze" "ぜ") ("zo" "ぞ")
+     ("da" "だ") ("di" "ぢ") ("du" "づ") ("de" "で") ("do" "ど")
+     ("ba" "ば") ("bi" "び") ("bu" "ぶ") ("be" "べ") ("bo" "ぼ")
+     ("pa" "ぱ") ("pi" "ぴ") ("pu" "ぷ") ("pe" "ぺ") ("po" "ぽ")
 
-;; か行
-(reskk-insert-trie reskk-tree "ka" "か" nil)
-(reskk-insert-trie reskk-tree "ki" "き" nil)
-(reskk-insert-trie reskk-tree "ku" "く" nil)
-(reskk-insert-trie reskk-tree "ke" "け" nil)
-(reskk-insert-trie reskk-tree "ko" "こ" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "kk" "っ" "k")
-;; 拗音
-(reskk-insert-trie reskk-tree "kya" "きゃ" nil)
-(reskk-insert-trie reskk-tree "kyu" "きゅ" nil)
-(reskk-insert-trie reskk-tree "kyo" "きょ" nil)
+     ;; 拗音
+     ("kya" "きゃ") ("kyi" "きぃ") ("kyu" "きゅ") ("kye" "きぇ") ("kyo" "きょ")
+     ("sya" "しゃ") ("syi" "しぃ") ("syu" "しゅ") ("sye" "しぇ") ("syo" "しょ")
+     ("tya" "ちゃ") ("tyi" "ちぃ") ("tyu" "ちゅ") ("tye" "ちぇ") ("tyo" "ちょ")
+     ("nya" "にゃ") ("nyi" "にぃ") ("nyu" "にゅ") ("nye" "にぇ") ("nyo" "にょ")
+     ("hya" "ひゃ") ("hyi" "ひぃ") ("hyu" "ひゅ") ("hye" "ひぇ") ("hyo" "ひょ")
+     ("mya" "みゃ") ("myi" "みぃ") ("myu" "みゅ") ("mye" "みぇ") ("myo" "みょ")
+     ("rya" "りゃ") ("ryi" "りぃ") ("ryu" "りゅ") ("rye" "りぇ") ("ryo" "りょ")
 
-;; さ行
-(reskk-insert-trie reskk-tree "sa" "さ" nil)
-(reskk-insert-trie reskk-tree "si" "し" nil)
-(reskk-insert-trie reskk-tree "su" "す" nil)
-(reskk-insert-trie reskk-tree "se" "せ" nil)
-(reskk-insert-trie reskk-tree "so" "そ" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "ss" "っ" "s")
-;; 拗音
-(reskk-insert-trie reskk-tree "sya" "しゃ" nil)
-(reskk-insert-trie reskk-tree "syu" "しゅ" nil)
-(reskk-insert-trie reskk-tree "syo" "しょ" nil)
+     ( "fa" "ふぁ") ( "fi" "ふぃ") ( "fu" "ふ"  ) ( "fe" "ふぇ") ( "fo" "ふぉ")
 
-;; た行
-(reskk-insert-trie reskk-tree "ta" "た" nil)
-(reskk-insert-trie reskk-tree "ti" "ち" nil)
-(reskk-insert-trie reskk-tree "tu" "つ" nil)
-(reskk-insert-trie reskk-tree "te" "て" nil)
-(reskk-insert-trie reskk-tree "to" "と" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "tt" "っ" "t")
-;; 拗音
-(reskk-insert-trie reskk-tree "tya" "ちゃ" nil)
-(reskk-insert-trie reskk-tree "tyu" "ちゅ" nil)
-(reskk-insert-trie reskk-tree "tyo" "ちょ" nil)
+     ;; 濁音、半濁音 + 拗音
+     ("gya" "ぎゃ") ("gyi" "ぎぃ") ("gyu" "ぎゅ") ("gye" "ぎぇ") ("gyo" "ぎょ")
+     ("zya" "じゃ") ("zyi" "じぃ") ("zyu" "じゅ") ("zye" "じぇ") ("zyo" "じょ")
+     ( "ja" "じゃ") ( "ji" "じ"  ) ( "ju" "じゅ") ( "je" "じぇ") ( "jo" "じょ")
+     ("dya" "ぢゃ") ("dyi" "ぢぃ") ("dyu" "ぢゅ") ("dye" "ぢぇ") ("dyo" "ぢょ")
+     ("bya" "びゃ") ("byi" "びぃ") ("byu" "びゅ") ("bye" "びぇ") ("byo" "びょ")
+     ("pya" "ぴゃ") ("pyi" "ぴぃ") ("pyu" "ぴゅ") ("pye" "ぴぇ") ("pyo" "ぴょ")
 
-;; な行
-(reskk-insert-trie reskk-tree "na" "な" nil)
-(reskk-insert-trie reskk-tree "ni" "に" nil)
-(reskk-insert-trie reskk-tree "nu" "ぬ" nil)
-(reskk-insert-trie reskk-tree "ne" "ね" nil)
-(reskk-insert-trie reskk-tree "no" "の" nil)
-;; ん行
-(reskk-insert-trie reskk-tree "nn" "ん" nil)
-;; 拗音
-(reskk-insert-trie reskk-tree "nya" "にゃ" nil)
-(reskk-insert-trie reskk-tree "nyu" "にゅ" nil)
-(reskk-insert-trie reskk-tree "nyo" "にょ" nil)
+     ( "va" "ゔぁ") ( "vi" "ゔぃ") ( "vu" "ゔ"  ) ( "ve" "ゔぇ") ( "vo" "ゔぉ")
 
-;; は行
-(reskk-insert-trie reskk-tree "ha" "は" nil)
-(reskk-insert-trie reskk-tree "hi" "ひ" nil)
-(reskk-insert-trie reskk-tree "hu" "ふ" nil)
-(reskk-insert-trie reskk-tree "he" "へ" nil)
-(reskk-insert-trie reskk-tree "ho" "ほ" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "hh" "っ" "h")
-;; 拗音
-(reskk-insert-trie reskk-tree "hya" "ひゃ" nil)
-(reskk-insert-trie reskk-tree "hyu" "ひゅ" nil)
-(reskk-insert-trie reskk-tree "hyo" "ひょ" nil)
+     ;; 小書き文字
+     ( "xa" "ぁ") ( "xi" "ぃ") ( "xu" "ぅ") ( "xe" "ぇ") ( "xo" "ぉ")
+     ("xka" "ゕ")              ("xke" "ゖ")
+                               ("xtu" "っ")
+     ("xya" "ゃ")              ("xyu" "ゅ")              ("xyo" "ょ")
 
-;; ま行
-(reskk-insert-trie reskk-tree "ma" "ま" nil)
-(reskk-insert-trie reskk-tree "mi" "み" nil)
-(reskk-insert-trie reskk-tree "mu" "む" nil)
-(reskk-insert-trie reskk-tree "me" "め" nil)
-(reskk-insert-trie reskk-tree "mo" "も" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "mm" "っ" "m")
-;; 拗音
-(reskk-insert-trie reskk-tree "mya" "みゃ" nil)
-(reskk-insert-trie reskk-tree "myu" "みゅ" nil)
-(reskk-insert-trie reskk-tree "myo" "みょ" nil)
+     ;; 記号
+     ("," "、")
+     ("." "。")
+     ("-" "ー")
+     ("~" "〜")
+     ("!" "！")
+     ("?" "？")
+     ("/" "・")
+     ("[" "「")
+     ("]" "」")
+     ))
 
-;; や行
-(reskk-insert-trie reskk-tree "ya" "や" nil)
-(reskk-insert-trie reskk-tree "yu" "ゆ" nil)
-(reskk-insert-trie reskk-tree "yo" "よ" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "yy" "っ" "y")
+;; 木構造構築
+(mapc (lambda (entry)
+        (apply #'reskk-insert-node entry))
+  reskk-tree-entries)
 
-;; ら行
-(reskk-insert-trie reskk-tree "ra" "ら" nil)
-(reskk-insert-trie reskk-tree "ri" "り" nil)
-(reskk-insert-trie reskk-tree "ru" "る" nil)
-(reskk-insert-trie reskk-tree "re" "れ" nil)
-(reskk-insert-trie reskk-tree "ro" "ろ" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "rr" "っ" "r")
-;; 拗音
-(reskk-insert-trie reskk-tree "rya" "りゃ" nil)
-(reskk-insert-trie reskk-tree "ryu" "りゅ" nil)
-(reskk-insert-trie reskk-tree "ryo" "りょ" nil)
-
-;; わ行
-(reskk-insert-trie reskk-tree "wa" "わ" nil)
-(reskk-insert-trie reskk-tree "wo" "を" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "ww" "っ" "w")
-
-;; が行
-(reskk-insert-trie reskk-tree "ga" "が" nil)
-(reskk-insert-trie reskk-tree "gi" "ぎ" nil)
-(reskk-insert-trie reskk-tree "gu" "ぐ" nil)
-(reskk-insert-trie reskk-tree "ge" "げ" nil)
-(reskk-insert-trie reskk-tree "go" "ご" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "gg" "っ" "g")
-;; 拗音
-(reskk-insert-trie reskk-tree "gya" "ぎゃ" nil)
-(reskk-insert-trie reskk-tree "gyu" "ぎゅ" nil)
-(reskk-insert-trie reskk-tree "gyo" "ぎょ" nil)
-
-;; ざ行(z)
-(reskk-insert-trie reskk-tree "za" "ざ" nil)
-(reskk-insert-trie reskk-tree "zi" "じ" nil)
-(reskk-insert-trie reskk-tree "zu" "ず" nil)
-(reskk-insert-trie reskk-tree "ze" "ぜ" nil)
-(reskk-insert-trie reskk-tree "zo" "ぞ" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "zz" "っ" "z")
-;; 拗音
-(reskk-insert-trie reskk-tree "zya" "じゃ" nil)
-(reskk-insert-trie reskk-tree "zyu" "じゅ" nil)
-(reskk-insert-trie reskk-tree "zyo" "じょ" nil)
-
-;; ざ行(j)
-(reskk-insert-trie reskk-tree "ja" "じゃ" nil)
-(reskk-insert-trie reskk-tree "ji" "じ" nil)
-(reskk-insert-trie reskk-tree "ju" "じゅ" nil)
-(reskk-insert-trie reskk-tree "je" "じぇ" nil)
-(reskk-insert-trie reskk-tree "jo" "じょ" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "jj" "っ" "j")
-
-;; だ行
-(reskk-insert-trie reskk-tree "da" "だ" nil)
-(reskk-insert-trie reskk-tree "di" "ぢ" nil)
-(reskk-insert-trie reskk-tree "du" "づ" nil)
-(reskk-insert-trie reskk-tree "de" "で" nil)
-(reskk-insert-trie reskk-tree "do" "ど" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "dd" "っ" "d")
-;; 拗音
-(reskk-insert-trie reskk-tree "dya" "ぢゃ" nil)
-(reskk-insert-trie reskk-tree "dyu" "ぢゅ" nil)
-(reskk-insert-trie reskk-tree "dyo" "ぢょ" nil)
-
-;; ば行
-(reskk-insert-trie reskk-tree "ba" "ば" nil)
-(reskk-insert-trie reskk-tree "bi" "び" nil)
-(reskk-insert-trie reskk-tree "bu" "ぶ" nil)
-(reskk-insert-trie reskk-tree "be" "べ" nil)
-(reskk-insert-trie reskk-tree "bo" "ぼ" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "bb" "っ" "b")
-;; 拗音
-(reskk-insert-trie reskk-tree "bya" "びゃ" nil)
-(reskk-insert-trie reskk-tree "byu" "びゅ" nil)
-(reskk-insert-trie reskk-tree "byo" "びょ" nil)
-
-;; ぱ行
-(reskk-insert-trie reskk-tree "pa" "ぱ" nil)
-(reskk-insert-trie reskk-tree "pi" "ぴ" nil)
-(reskk-insert-trie reskk-tree "pu" "ぷ" nil)
-(reskk-insert-trie reskk-tree "pe" "ぺ" nil)
-(reskk-insert-trie reskk-tree "po" "ぽ" nil)
-;; 促音
-(reskk-insert-trie reskk-tree "pp" "っ" "p")
-;; 拗音
-(reskk-insert-trie reskk-tree "pya" "ぴゃ" nil)
-(reskk-insert-trie reskk-tree "pyu" "ぴゅ" nil)
-(reskk-insert-trie reskk-tree "pyo" "ぴょ" nil)
-
-
-;; 記号
-(reskk-insert-trie reskk-tree "," "、" nil)
-(reskk-insert-trie reskk-tree "." "。" nil)
-(reskk-insert-trie reskk-tree "-" "ー" nil)
-(reskk-insert-trie reskk-tree "!" "！" nil)
-(reskk-insert-trie reskk-tree "?" "？" nil)
+(dolist (char '("k" "s" "t" "h" "m" "y" "r" "w" "g" "z" "d" "b" "p" "f" "j" "v"))
+  (reskk-insert-something-node reskk-tree (concat char char) "っ" char)
+  )
 
 (provide 'reskk-tree)
