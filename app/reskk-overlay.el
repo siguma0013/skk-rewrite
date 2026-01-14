@@ -18,10 +18,11 @@
     ;; オーバーレイ作成
     (setq-local reskk-overlay (make-overlay (point) (point)))
     ;; オーバーレイ表示文字列の構成
-    (setq-local styled-text (propertize text
-                              'face '(:background "orange" :foreground "red" :weight bold)))
-    ;; オーバーレイ表示
-    (overlay-put reskk-overlay 'after-string styled-text)
+    (let* ((color (reskk-color))
+            (styled-text (propertize text 'face `(:foreground ,color))))
+      ;; オーバーレイ表示
+      (overlay-put reskk-overlay 'after-string styled-text)
+      )
     )
   )
 

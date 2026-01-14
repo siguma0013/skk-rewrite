@@ -16,10 +16,23 @@
   "Re:SKKの設定グループ."
   :group 'input)
 
-(defcustom skk-rewrite-dummy t
-  "何もしないダミー変数."
-  :type 'boolean
+(defcustom reskk-half-alphabet-color "gray"
+  "SKKモードが半角英数モードの際に使用する色"
+  :type 'color
   :group 'reskk-mode)
+
+(defcustom reskk-hiragana-color "pink"
+  "SKKモードがひらがなモードの際に使用する色"
+  :type 'color
+  :group 'reskk-mode)
+
+(defcustom reskk-katakana-color "green"
+  "SKKモードがカタカナモードの際に使用する色"
+  :type 'color
+  :group 'reskk-mode)
+
+;; デフォカラー保持変数
+(defvar reskk-default-color "red")
 
 ;; SKKモード
 ;; HALF-ALPHABET:半角英数
@@ -95,10 +108,28 @@
     )
   )
 
+;; SKKモードカラー決定関数
+(defun reskk-color ()
+  (pcase reskk-state
+    ('HALF-ALPHABET reskk-half-alphabet-color)
+    ('HIRAGANA reskk-hiragana-color)
+    ('KATAKANA reskk-katakana-color)))
+
+;; カーソル色更新関数
+(defun reskk-update-cursor-color ()
+  (if reskk-mode
+    ;; マイナーモード有効時
+    (set-cursor-color (reskk-color))
+    ;; マイナーモード非有効時
+    (set-cursor-color reskk-default-color)
+    )
+  )
+
 ;; SKKモード変更関数
 (defun reskk-set-state (state)
   (setq-local reskk-state state)
   (reskk-update-keymap)
+  (reskk-update-cursor-color)
   (force-mode-line-update))
 
 (defun reskk-activate-half-alphabet ()
@@ -116,13 +147,25 @@
   (interactive)
   (reskk-set-state 'KATAKANA))
 
+;; デフォカラー取得
+(add-hook 'after-init-hook
+  #'(lambda ()
+      (setq reskk-default-color (frame-parameter nil 'cursor-color))))
+
 ;;;###autoload
 (define-minor-mode reskk-mode
   ""
   :lighter (:eval (reskk-mode-line))
   (if reskk-mode
     ;; マイナーモード有効化時
-    (reskk-update-keymap)
+    (progn
+      (reskk-set-state 'HALF-ALPHABET)
+      (add-hook 'window-selection-change-functions #'(lambda (_window)
+                                                       (with-current-buffer (window-buffer)
+                                                         (reskk-update-cursor-color)
+                                                         )
+                                                       ))
+      )
     ;; マイナーモード無効化時
     (setq minor-mode-overriding-map-alist (assq-delete-all 'reskk-mode minor-mode-overriding-map-alist))
     )
