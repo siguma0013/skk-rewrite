@@ -96,4 +96,10 @@
     )
   )
 
+;; 変換中バッファ削除関数
+(defun reskk-clear-buffer ()
+  (setq-local reskk-convert-buffer nil)
+  (reskk-display-overlay reskk-convert-buffer)
+  )
+
 (provide 'reskk-input)

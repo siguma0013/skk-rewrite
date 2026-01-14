@@ -125,12 +125,29 @@
     )
   )
 
+;; self-insert-command以外が実行された時に、変換中バッファを強制削除する関数
+(defun reskk-convert-force-cancel ()
+  (unless (memq this-command '(reskk-insert
+                                reskk-insert-hiragana
+                                reskk-insert-katakana
+                                reskk-backward-char
+                                ))
+    (reskk-clear-buffer))
+  )
+
 ;; SKKモード変更関数
 (defun reskk-set-state (state)
   (setq-local reskk-state state)
   (reskk-update-keymap)
   (reskk-update-cursor-color)
-  (force-mode-line-update))
+  (force-mode-line-update)
+  (pcase reskk-state
+    ((or 'HIRAGANA 'KATAKANA)
+      (add-hook 'pre-command-hook #'reskk-convert-force-cancel nil t))
+    (_
+      (remove-hook 'pre-command-hook #'reskk-convert-force-cancel t))
+    )
+  )
 
 (defun reskk-activate-half-alphabet ()
   "SKKモードを半角英数モードに変更するコマンド"
