@@ -18,7 +18,7 @@
           (char (char-to-string keycode))
           (node (reskk-find-node char)))
     ;; バッファを完全リセット
-    (setq-local reskk-convert-buffer nil)
+    (setq reskk-convert-buffer nil)
     (if node
       ;; ノードが取得できたとき
       (insert (reskk-tree-node-value node))
@@ -55,12 +55,12 @@
 
     (cond
       ((null node)                      ; ノードが取得できなかったとき
-        (setq-local reskk-convert-buffer char))
+        (setq reskk-convert-buffer char))
       ((reskk-tree-is-leaf node)        ; ノードが末端のとき
         (funcall call-back node)
-        (setq-local reskk-convert-buffer (reskk-tree-node-pending node)))
+        (setq reskk-convert-buffer (reskk-tree-node-pending node)))
       (t                                ; ノードが途中のとき
-        (setq-local reskk-convert-buffer buffer))
+        (setq reskk-convert-buffer buffer))
       )
     )
   (reskk-display-overlay reskk-convert-buffer)
@@ -87,7 +87,7 @@
   (if (> (length reskk-convert-buffer) 0)
     ;; 変換中バッファに文字列がある時
     (progn
-      (setq-local reskk-convert-buffer (substring reskk-convert-buffer 0 -1))
+      (setq reskk-convert-buffer (substring reskk-convert-buffer 0 -1))
       (reskk-display-overlay reskk-convert-buffer)
       )
 
@@ -98,7 +98,7 @@
 
 ;; 変換中バッファ削除関数
 (defun reskk-clear-buffer ()
-  (setq-local reskk-convert-buffer nil)
+  (setq reskk-convert-buffer nil)
   (reskk-display-overlay reskk-convert-buffer)
   )
 

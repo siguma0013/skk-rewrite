@@ -137,7 +137,7 @@
 
 ;; SKKモード変更関数
 (defun reskk-set-state (state)
-  (setq-local reskk-state state)
+  (setq reskk-state state)
   (reskk-update-keymap)
   (reskk-update-cursor-color)
   (force-mode-line-update)

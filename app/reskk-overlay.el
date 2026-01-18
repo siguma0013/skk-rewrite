@@ -16,7 +16,7 @@
 
   (when text
     ;; オーバーレイ作成
-    (setq-local reskk-overlay (make-overlay (point) (point)))
+    (setq reskk-overlay (make-overlay (point) (point)))
     ;; オーバーレイ表示文字列の構成
     (let* ((color (reskk-color))
             (styled-text (propertize text 'face `(:foreground ,color))))
