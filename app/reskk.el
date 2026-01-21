@@ -53,21 +53,21 @@
 (declare-function reskk-activate-hiragana nil)
 (declare-function reskk-activate-half-alphabet nil)
 
-(defvar-keymap reskk-half-alphabet-keymap
-  :doc "SKKモードが半角英数モードの際に使用するキーマップ"
-  "C-j" #'reskk-activate-hiragana)
+(defvar reskk-half-alphabet-keymap (make-sparse-keymap)
+  "SKKモードが半角英数モードの際に使用するキーマップ")
 
-(defvar-keymap reskk-hiragana-keymap
-  :doc "SKKモードがひらがなモードの際に使用するキーマップ")
+(defvar reskk-hiragana-keymap (make-sparse-keymap)
+  "SKKモードがひらがなモードの際に使用するキーマップ")
 
-(defvar-keymap reskk-katakana-keymap
-  :doc "SKKモードがカタカナモードの際に使用するキーマップ")
+(defvar reskk-katakana-keymap (make-sparse-keymap)
+  "SKKモードがカタカナモードの際に使用するキーマップ")
 
 (define-key reskk-hiragana-keymap [remap self-insert-command] #'reskk-insert)
 ;; 削除系コマンドのオーバーライド
 (define-key reskk-hiragana-keymap [remap delete-backward-char] #'reskk-backward-char)
 (define-key reskk-hiragana-keymap [remap backward-delete-char-untabify] #'reskk-backward-char)
 
+(keymap-set reskk-half-alphabet-keymap "C-j" #'reskk-activate-hiragana)
 
 (cl-loop for count from ?a to ?z do
   (message "KEY:%d => %s" count (char-to-string count))
