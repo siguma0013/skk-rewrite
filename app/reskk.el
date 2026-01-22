@@ -75,13 +75,20 @@
 (defvar reskk-katakana-convert-keymap (make-sparse-keymap)
   "かな変換中の際に使用するカタカナ用キーマップ")
 
+(defvar reskk-hiragana-select-keymap (make-sparse-keymap)
+  "かな変換選択中に使用するひらがな用キーマップ")
+
+(defvar reskk-katakana-select-keymap (make-sparse-keymap)
+  "かな変換選択中に使用するカタカナ用キーマップ")
+
 (define-key reskk-hiragana-keymap [remap self-insert-command] #'reskk-insert)
 ;; 削除系コマンドのオーバーライド
 (define-key reskk-hiragana-keymap [remap delete-backward-char] #'reskk-backward-char)
 (define-key reskk-hiragana-keymap [remap backward-delete-char-untabify] #'reskk-backward-char)
 
 (keymap-set reskk-half-alphabet-keymap "C-j" #'reskk-activate-hiragana)
-(keymap-set reskk-hiragana-convert-keymap "C-j" #'reskk-insert-convert-start)
+(keymap-set reskk-hiragana-convert-keymap "C-j" #'reskk-activate-start)
+(keymap-set reskk-hiragana-select-keymap "C-j" #'reskk-insert-convert-confirm)
 
 (define-key reskk-hiragana-convert-keymap [remap self-insert-command] #'reskk-insert-convert)
 
@@ -108,19 +115,24 @@
 ;; キーマップ決定関数
 (defun reskk-keymap ()
   "現在の `reskk-state' と `reskk-convert-state' に基づいて適切なキーマップを返す。"
-  (if (eq reskk-convert-state 'NONE)
-    ;; 変換中でなければ通常のキーマップ
-    (pcase reskk-state
-      ('HALF-ALPHABET reskk-half-alphabet-keymap)
-      ('HIRAGANA reskk-hiragana-keymap)
-      ('KATAKANA reskk-katakana-keymap))
-    ;; かな変換中は変換用キーマップを優先する
-    (pcase reskk-state
-      ('HALF-ALPHABET reskk-half-alphabet-keymap)
-      ('HIRAGANA reskk-hiragana-convert-keymap)
-      ('KATAKANA reskk-katakana-convert-keymap)
-      (_ reskk-half-alphabet-keymap))
-    ))
+  (pcase reskk-state
+    ('HALF-ALPHABET reskk-half-alphabet-keymap)
+    ('HIRAGANA
+      (pcase reskk-convert-state
+        ('NONE reskk-hiragana-keymap)
+        ('CONVERT reskk-hiragana-convert-keymap)
+        ('SELECT reskk-hiragana-select-keymap)
+        )
+      )
+    ('KATAKANA
+      (pcase reskk-convert-state
+        ('NONE reskk-katakana-keymap)
+        ('CONVERT reskk-katakana-convert-keymap)
+        ('SELECT reskk-katakana-select-keymap)
+        )
+      )
+    )
+  )
 
 ;; キーマップ更新関数
 (defun reskk-update-keymap ()
@@ -200,6 +212,13 @@
   (reskk-insert-convert)
   )
 
+(defun reskk-activate-start ()
+  (interactive)
+  (setq reskk-convert-state 'SELECT)
+  (reskk-set-state 'HIRAGANA)
+  (reskk-insert-convert-start)
+  )
+
 ;; デフォカラー取得
 (add-hook 'after-init-hook
   #'(lambda ()
@@ -212,6 +231,7 @@
   (if reskk-mode
     ;; マイナーモード有効化時
     (progn
+      (setq reskk-convert-state 'NONE)
       (reskk-set-state 'HALF-ALPHABET)
       (add-hook 'window-selection-change-functions #'(lambda (_window)
                                                        (with-current-buffer (window-buffer)

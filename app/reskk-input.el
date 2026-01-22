@@ -14,6 +14,9 @@
 ;; 漢変換ポイント
 (defvar-local reskk-convert-point nil)
 
+;; かな漢字変換中バッファ
+(defvar-local reskk-convert-kanji-buffer nil)
+
 (defun reskk-insert ()
   "単純変換入力コマンド"
   (interactive)
@@ -104,8 +107,31 @@
   (let* ((kana (buffer-substring-no-properties reskk-convert-point (point)))
           (kanji "漢字"))
     (message "%s" kanji)
+    (setq reskk-convert-kanji-buffer kanji)
     (reskk-display-select-overlay reskk-convert-point kanji)
     )
+  )
+
+(defun reskk-insert-convert-confirm ()
+  (interactive)
+
+  (let* ((end-marker (copy-marker reskk-convert-point)))
+    ;; カーソルの挙動定義
+    (set-marker-insertion-type end-marker t)
+
+    ;; 文字列置換
+    (replace-region-contents reskk-convert-point (point)
+      (lambda ()
+        (set-marker end-marker (point))
+        reskk-convert-kanji-buffer))
+    ;; カーソル移動
+    (goto-char end-marker))
+
+  (setq reskk-convert-point nil)
+  (setq reskk-convert-kanji-buffer nil)
+  (setq reskk-convert-buffer nil)
+
+  (reskk-delete-overlay)
   )
 
 ;; ひらがなをカタカナに変換する関数
