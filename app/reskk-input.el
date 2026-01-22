@@ -11,6 +11,9 @@
 ;; かな変換中バッファ
 (defvar-local reskk-convert-buffer nil)
 
+;; 漢変換ポイント
+(defvar-local reskk-convert-point nil)
+
 (defun reskk-insert ()
   "単純変換入力コマンド"
   (interactive)
@@ -66,6 +69,45 @@
   (reskk-display-overlay reskk-convert-buffer)
   )
 
+(defun reskk-insert-convert ()
+  (interactive)
+  (let* ((keycode last-command-event)       ; キーコード
+          (char (char-to-string (reskk-convert-upper-to-lower keycode)))   ; 入力文字列
+          (buffer (concat reskk-convert-buffer char)) ; かな変換中文字列
+          (node (reskk-find-node buffer)))            ; 木構造の検索結果
+
+    (unless reskk-convert-point
+      (setq reskk-convert-point (point)))
+
+    (message "%s" reskk-convert-point)
+
+    (cond
+      ((null node)                      ; ノードが取得できなかったとき
+        (setq reskk-convert-buffer char))
+      ((reskk-tree-is-leaf node)        ; ノードが末端のとき
+        (insert (reskk-tree-node-value node))
+        (setq reskk-convert-buffer (reskk-tree-node-pending node)))
+      (t                                ; ノードが途中のとき
+        (setq reskk-convert-buffer buffer))
+      )
+    )
+
+  (reskk-display-convert-overlay reskk-convert-point reskk-convert-buffer)
+  )
+
+(defun reskk-insert-convert-start ()
+  (interactive)
+  (message "%s" reskk-convert-point)
+  (message "%s" (point))
+
+  ;; 試作のため、固定で差し替え
+  (let* ((kana (buffer-substring-no-properties reskk-convert-point (point)))
+          (kanji "漢字"))
+    (message "%s" kanji)
+    (reskk-display-select-overlay reskk-convert-point kanji)
+    )
+  )
+
 ;; ひらがなをカタカナに変換する関数
 (defun reskk-convert-hiragana-to-katakana (hiragana)
   (apply 'string
@@ -79,6 +121,12 @@
       (string-to-list hiragana))
     )
   )
+
+;; アルファベットの大文字を小文字に変換する関数
+(defun reskk-convert-upper-to-lower (char)
+  (if (and (>= char ?A) (<= char ?Z))
+    (+ char (- ?a ?A))
+    char))
 
 (defun reskk-backward-char ()
   "delete-backward-charのオーバーライド関数"

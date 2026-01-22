@@ -41,6 +41,13 @@
 ;; KATAKANA:カタカナ
 (defvar-local reskk-state 'HALF-ALPHABET)
 
+;; SKK変換モード
+;; NONE
+;; CONVERT
+;; CONVERT-OKURIGANA
+;; SELECT
+(defvar-local reskk-convert-state 'NONE)
+
 ;; モードライン文字列決定関数
 (defun reskk-mode-line ()
   (when reskk-mode
@@ -62,12 +69,21 @@
 (defvar reskk-katakana-keymap (make-sparse-keymap)
   "SKKモードがカタカナモードの際に使用するキーマップ")
 
+(defvar reskk-hiragana-convert-keymap (make-sparse-keymap)
+  "かな変換中の際に使用するひらがな用キーマップ")
+
+(defvar reskk-katakana-convert-keymap (make-sparse-keymap)
+  "かな変換中の際に使用するカタカナ用キーマップ")
+
 (define-key reskk-hiragana-keymap [remap self-insert-command] #'reskk-insert)
 ;; 削除系コマンドのオーバーライド
 (define-key reskk-hiragana-keymap [remap delete-backward-char] #'reskk-backward-char)
 (define-key reskk-hiragana-keymap [remap backward-delete-char-untabify] #'reskk-backward-char)
 
 (keymap-set reskk-half-alphabet-keymap "C-j" #'reskk-activate-hiragana)
+(keymap-set reskk-hiragana-convert-keymap "C-j" #'reskk-insert-convert-start)
+
+(define-key reskk-hiragana-convert-keymap [remap self-insert-command] #'reskk-insert-convert)
 
 (cl-loop for count from ?a to ?z do
   (message "KEY:%d => %s" count (char-to-string count))
@@ -76,6 +92,7 @@
   )
 (cl-loop for count from ?A to ?Z do
   (message "KEY:%d => %s" count (char-to-string count))
+  (define-key reskk-hiragana-keymap (char-to-string count) #'reskk-activate-convert)
   )
 
 (progn
@@ -90,10 +107,20 @@
 
 ;; キーマップ決定関数
 (defun reskk-keymap ()
-  (pcase reskk-state
-    ('HALF-ALPHABET reskk-half-alphabet-keymap)
-    ('HIRAGANA reskk-hiragana-keymap)
-    ('KATAKANA reskk-katakana-keymap)))
+  "現在の `reskk-state' と `reskk-convert-state' に基づいて適切なキーマップを返す。"
+  (if (eq reskk-convert-state 'NONE)
+    ;; 変換中でなければ通常のキーマップ
+    (pcase reskk-state
+      ('HALF-ALPHABET reskk-half-alphabet-keymap)
+      ('HIRAGANA reskk-hiragana-keymap)
+      ('KATAKANA reskk-katakana-keymap))
+    ;; かな変換中は変換用キーマップを優先する
+    (pcase reskk-state
+      ('HALF-ALPHABET reskk-half-alphabet-keymap)
+      ('HIRAGANA reskk-hiragana-convert-keymap)
+      ('KATAKANA reskk-katakana-convert-keymap)
+      (_ reskk-half-alphabet-keymap))
+    ))
 
 ;; キーマップ更新関数
 (defun reskk-update-keymap ()
@@ -131,6 +158,8 @@
                                 reskk-insert-hiragana
                                 reskk-insert-katakana
                                 reskk-backward-char
+                                reskk-insert-convert
+                                reskk-activate-convert
                                 ))
     (reskk-clear-buffer))
   )
@@ -163,6 +192,13 @@
   "SKKモードをカタカナモードに変更するコマンド"
   (interactive)
   (reskk-set-state 'KATAKANA))
+
+(defun reskk-activate-convert ()
+  (interactive)
+  (setq reskk-convert-state 'CONVERT)
+  (reskk-set-state 'HIRAGANA)
+  (reskk-insert-convert)
+  )
 
 ;; デフォカラー取得
 (add-hook 'after-init-hook
