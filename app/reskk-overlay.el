@@ -40,7 +40,7 @@
   (setq reskk-overlay (make-overlay target-point (point)))
 
   ;; オーバーレイ表示文字列の構成
-  (let* ((color (reskk-color))
+  (let* ((color (reskk-get-color))
          (display-text (or text ""))
          (styled-text (propertize display-text 'face `(:foreground ,color :background "red"))))
     ;; オーバーレイ表示
@@ -58,7 +58,7 @@
   (setq reskk-overlay (make-overlay target-point (point)))
 
   ;; オーバーレイ表示文字列の構成
-  (let* ((color (reskk-color))
+  (let* ((color (reskk-get-color))
           (display-text (or text ""))
           (styled-text (propertize display-text 'face `(:background "blue"))))
     ;; オーバーレイ表示
