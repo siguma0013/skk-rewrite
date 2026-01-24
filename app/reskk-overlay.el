@@ -16,17 +16,17 @@
 ;; オーバーレイアクセサ：'marker'
 (defun reskk-get-overlay-marker ()
   (when (overlayp reskk-overlay)
-    (overlay-get reskk-overlay 'before-string)))
+    (substring-no-properties (overlay-get reskk-overlay 'before-string))))
 
 ;; オーバーレイアクセサ：'option'
 (defun reskk-get-overlay-option ()
   (when (overlayp reskk-overlay)
-    (overlay-get reskk-overlay 'display)))
+    (substring-no-properties (overlay-get reskk-overlay 'display))))
 
 ;; オーバーレイアクセサ：'fragment'
 (defun reskk-get-overlay-fragment ()
   (when (overlayp reskk-overlay)
-    (overlay-get reskk-overlay 'after-string)))
+    (substring-no-properties (overlay-get reskk-overlay 'after-string))))
 
 ;; ユーティリティ関数：文字有り判定
 ;; t：非空文字の文字列
