@@ -100,6 +100,8 @@
                                 reskk-backward-char
                                 reskk-insert-convert
                                 reskk-activate-convert
+                                reskk-activate-start
+                                reskk-insert-convert-confirm
                                 ))
     (reskk-clear-buffer))
   )

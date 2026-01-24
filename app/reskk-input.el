@@ -96,7 +96,8 @@
       )
     )
 
-  (reskk-display-convert-overlay reskk-convert-point reskk-convert-buffer)
+  (reskk-display-overlay-fragment reskk-convert-buffer)
+  (reskk-display-overlay-marker "▽")
   )
 
 (defun reskk-insert-convert-start ()
@@ -109,7 +110,10 @@
           (kanji "漢字"))
     (message "%s" kanji)
     (setq reskk-convert-kanji-buffer kanji)
-    (reskk-display-select-overlay reskk-convert-point kanji)
+
+    (reskk-display-overlay-fragment nil)
+    (reskk-display-overlay-marker "▼")
+    (reskk-display-overlay-option kanji)
     )
   )
 
@@ -132,7 +136,7 @@
   (setq reskk-convert-kanji-buffer nil)
   (setq reskk-convert-buffer nil)
 
-  (reskk-delete-overlay)
+  (reskk-reset-overlay)
   )
 
 ;; ひらがなをカタカナに変換する関数
@@ -163,7 +167,7 @@
     ;; 変換中バッファに文字列がある時
     (progn
       (setq reskk-convert-buffer (substring reskk-convert-buffer 0 -1))
-      (reskk-display-overlay reskk-convert-buffer)
+      (reskk-display-overlay-fragment reskk-convert-buffer)
       )
 
     ;; 変換中バッファが空の時
@@ -174,7 +178,7 @@
 ;; 変換中バッファ削除関数
 (defun reskk-clear-buffer ()
   (setq reskk-convert-buffer nil)
-  (reskk-display-overlay reskk-convert-buffer)
+  (reskk-display-overlay-fragment nil)
   )
 
 (provide 'reskk-input)

@@ -8,96 +8,75 @@
 ;; 変換中オーバーレイ
 (defvar-local reskk-overlay nil)
 
-;; ユーティリティ関数：文字無し判定
-;; t：非文字列、空文字
-;; nil：それ以外
-(defun reskk-is-empty-string (string)
-  (or (not (stringp string)) (string-empty-p string)))
-
-;; オーバーレイ作成関数
-(defun reskk-make-overlay (start-point end-point)
-  (unless (and
-            (overlayp reskk-overlay)
-            (overlay-start reskk-overlay)
-            (overlay-end reskk-overlay))
-    ;; オーバーレイが生存していなければ作成
-    (setq reskk-overlay (make-overlay start-point end-point))))
-
-;; オーバーレイ削除関数
-(defun reskk-delete-overlay ()
+;; オーバーレイアクセサ：開始位置
+(defun reskk-get-overlay-start ()
   (when (overlayp reskk-overlay)
-    (let* ((display (overlay-get reskk-overlay 'display))
-            (after-string (overlay-get reskk-overlay 'after-string)))
-      (unless (and
-                (reskk-is-empty-string display)
-                (reskk-is-empty-string after-string))
-        ;; オーバーレイの'display'と'after-string'が空であれば削除
-        (delete-overlay reskk-overlay)
-        (overlay-put reskk-overlay 'display nil)
-        (overlay-put reskk-overlay 'after-string nil)
-        (overlay-put reskk-overlay 'before-string nil)))))
+    (overlay-start reskk-overlay)))
 
-(defun reskk-display-overlay-fragment (text)
-  (reskk-make-overlay (point) (point))
-  (if text
-    (overlay-put reskk-overlay 'after-string (propertize text 'face `(:foreground ,(reskk-get-color))))
-    (overlay-put reskk-overlay 'after-string nil)))
+;; オーバーレイアクセサ：'marker'
+(defun reskk-get-overlay-marker ()
+  (when (overlayp reskk-overlay)
+    (overlay-get reskk-overlay 'before-string)))
 
+;; オーバーレイアクセサ：'option'
+(defun reskk-get-overlay-option ()
+  (when (overlayp reskk-overlay)
+    (overlay-get reskk-overlay 'display)))
 
-;; オーバーレイ表示関数
-(defun reskk-display-overlay (text)
-  ;; 変換中オーバーレイ更新のために一旦削除
-  (when reskk-overlay
-    (delete-overlay reskk-overlay))
+;; オーバーレイアクセサ：'fragment'
+(defun reskk-get-overlay-fragment ()
+  (when (overlayp reskk-overlay)
+    (overlay-get reskk-overlay 'after-string)))
 
-  (when text
-    ;; オーバーレイ作成
-    (setq reskk-overlay (make-overlay (point) (point)))
-    ;; オーバーレイ表示文字列の構成
-    (let* ((color (reskk-get-color))
-            (styled-text (propertize text 'face `(:foreground ,color))))
-      ;; オーバーレイ表示
-      (overlay-put reskk-overlay 'after-string styled-text)
-      )
+;; ユーティリティ関数：文字有り判定
+;; t：非空文字の文字列
+;; nil：非文字列、空文字
+(defun reskk-is-string (string)
+  (and (stringp string) (not (string-empty-p string))))
+
+;; ユーティリティ関数：表示確認
+;; t：表示されている
+;; nil：非表示
+(defun reskk-is-display-overlay ()
+  (or
+    (reskk-is-string (reskk-get-overlay-marker))
+    (reskk-is-string (reskk-get-overlay-option))
+    (reskk-is-string (reskk-get-overlay-fragment))))
+
+;; オーバーレイ表示管理関数
+(defun reskk-make-overlay ()
+  (if  (reskk-is-display-overlay)
+    (move-overlay reskk-overlay (reskk-get-overlay-start) (point))
+    (if (and
+          (overlayp reskk-overlay)
+          (overlay-start reskk-overlay)
+          (overlay-end reskk-overlay))
+      ;; 次回以降移動
+      (move-overlay reskk-overlay (point) (point))
+      ;; 初回だけ作成
+      (setq reskk-overlay (make-overlay (point) (point))))
     )
   )
 
-;; オーバーレイ表示関数
-(defun reskk-display-convert-overlay (target-point text)
-  ;; 変換中オーバーレイ更新のために一旦削除
-  (when reskk-overlay
-    (delete-overlay reskk-overlay))
+;; オーバーレイリセット関数
+(defun reskk-reset-overlay ()
+  (when (overlayp reskk-overlay)
+    (overlay-put reskk-overlay 'before-string nil)
+    (overlay-put reskk-overlay 'display nil)
+    (overlay-put reskk-overlay 'after-string nil)
+    ))
 
-  ;; オーバーレイ作成
-  (setq reskk-overlay (make-overlay target-point (point)))
+(defun reskk-display-overlay-marker (text)
+  (reskk-make-overlay)
+  (overlay-put reskk-overlay 'before-string text))
 
-  ;; オーバーレイ表示文字列の構成
-  (let* ((color (reskk-get-color))
-         (display-text (or text ""))
-         (styled-text (propertize display-text 'face `(:foreground ,color :background "red"))))
-    ;; オーバーレイ表示
-    (overlay-put reskk-overlay 'after-string styled-text)
-    (overlay-put reskk-overlay 'before-string "▽")
-     )
-   )
+(defun reskk-display-overlay-option (text)
+  (reskk-make-overlay)
+  (overlay-put reskk-overlay 'display (propertize (or text "") 'face `(:background "cyan"))))
 
-(defun reskk-display-select-overlay (target-point text)
-  ;; 変換中オーバーレイ更新のために一旦削除
-  (when reskk-overlay
-    (delete-overlay reskk-overlay))
-
-  ;; オーバーレイ作成
-  (setq reskk-overlay (make-overlay target-point (point)))
-
-  ;; オーバーレイ表示文字列の構成
-  (let* ((color (reskk-get-color))
-          (display-text (or text ""))
-          (styled-text (propertize display-text 'face `(:background "blue"))))
-    ;; オーバーレイ表示
-    (overlay-put reskk-overlay 'display styled-text)
-    (overlay-put reskk-overlay 'before-string "▽")
-     )
-  )
+(defun reskk-display-overlay-fragment (text)
+  (reskk-make-overlay)
+  (overlay-put reskk-overlay 'after-string (propertize (or text "") 'face `(:foreground ,(reskk-get-color)))))
 
 (provide 'reskk-overlay)
 
