@@ -39,7 +39,9 @@
 
 (defun reskk-display-overlay-fragment (text)
   (reskk-make-overlay (point) (point))
-  (overlay-put reskk-overlay 'after-string (propertize text 'face `(:foreground ,(reskk-get-color)))))
+  (if text
+    (overlay-put reskk-overlay 'after-string (propertize text 'face `(:foreground ,(reskk-get-color))))
+    (overlay-put reskk-overlay 'after-string nil)))
 
 
 ;; オーバーレイ表示関数

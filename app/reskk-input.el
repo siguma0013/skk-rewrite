@@ -69,10 +69,8 @@
         (setq reskk-convert-buffer buffer))
       )
     )
-  (if reskk-convert-buffer
-    (reskk-display-overlay-fragment reskk-convert-buffer)
-    (reskk-delete-overlay)
-    )
+
+  (reskk-display-overlay-fragment reskk-convert-buffer)
   )
 
 (defun reskk-insert-convert ()
