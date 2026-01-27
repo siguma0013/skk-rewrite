@@ -130,6 +130,7 @@
   (setq reskk-convert-point nil)
   (setq reskk-convert-kanji-buffer nil)
 
+  (reskk-reset-convert-state)
   (reskk-reset-overlay)
   )
 

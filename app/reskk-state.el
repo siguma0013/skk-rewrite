@@ -99,4 +99,8 @@
       ('CONVERT 'CONVERT-OKURIGANA)))
   (run-hooks 'reskk-update-state-hook))
 
+(defun reskk-reset-convert-state ()
+  (setq reskk-convert-state 'NONE)
+  (run-hooks 'reskk-update-state-hook))
+
 (provide 'reskk-state)
