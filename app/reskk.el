@@ -38,7 +38,6 @@
 (declare-function reskk-activate-hiragana nil)
 (declare-function reskk-activate-half-alphabet nil)
 
-(define-key reskk-hiragana-keymap [remap self-insert-command] #'reskk-insert)
 ;; 削除系コマンドのオーバーライド
 (define-key reskk-hiragana-keymap [remap delete-backward-char] #'reskk-backward-char)
 (define-key reskk-hiragana-keymap [remap backward-delete-char-untabify] #'reskk-backward-char)

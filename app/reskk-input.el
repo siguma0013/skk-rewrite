@@ -15,22 +15,6 @@
 ;; フラグメントバッファ
 (defvar-local reskk-input-fragment nil)
 
-(defun reskk-insert ()
-  "単純変換入力コマンド"
-  (interactive)
-  (let* ((keycode last-command-event)
-          (char (char-to-string keycode))
-          (node (reskk-find-node char)))
-    ;; バッファを完全リセット
-    (setq reskk-input-fragment nil)
-    (reskk-display-overlay-fragment nil)
-    (if node
-      ;; ノードが取得できたとき
-      (insert (reskk-tree-node-value node))
-      ;; ノードが取得できなかったとき
-      (insert char))
-    ))
-
 (defun reskk-insert-hiragana ()
   "ひらがな入力コマンド"
   (interactive)
