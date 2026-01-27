@@ -80,6 +80,13 @@
     ('HIRAGANA " SKK[あ]")
     ('KATAKANA " SKK[ア]")))
 
+;; marker決定関数
+(defun reskk-get-marker ()
+  (pcase reskk-convert-state
+    ('CONVERT "▽")
+    ('CONVERT-OKURIGANA "▽")
+    ('SELECT "▼")))
+
 (defun reskk-set-state (state)
   (setq reskk-state state)
   (run-hooks 'reskk-update-state-hook)

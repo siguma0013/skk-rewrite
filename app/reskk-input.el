@@ -7,6 +7,7 @@
 (require 'reskk-tree)
 (require 'reskk-overlay)
 (require 'reskk-dictionary)
+(require 'reskk-state)
 
 ;; 漢変換ポイント
 (defvar-local reskk-convert-point nil)
@@ -91,7 +92,7 @@
       )
     )
 
-  (reskk-display-overlay-marker "▽")
+  (reskk-display-overlay-marker (reskk-get-marker))
   )
 
 (defun reskk-insert-convert-start ()
@@ -106,7 +107,7 @@
     (setq reskk-convert-kanji-buffer kanji)
 
     (reskk-display-overlay-fragment nil)
-    (reskk-display-overlay-marker "▼")
+    (reskk-display-overlay-marker (reskk-get-marker))
     (reskk-display-overlay-option kanji)
     )
   )
