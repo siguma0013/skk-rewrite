@@ -106,19 +106,19 @@
     (reskk-clear-buffer))
   )
 
-;; SKKモード変更関数
-(defun reskk-set-state (state)
-  (setq reskk-state state)
-  (reskk-update-keymap)
-  (reskk-update-cursor-color)
-  (force-mode-line-update)
-  (pcase reskk-state
-    ((or 'HIRAGANA 'KATAKANA)
-      (add-hook 'pre-command-hook #'reskk-convert-force-cancel nil t))
-    (_
-      (remove-hook 'pre-command-hook #'reskk-convert-force-cancel t))
-    )
-  )
+(add-hook
+  'reskk-update-state-hook
+  (lambda ()
+    (reskk-update-keymap)
+    (reskk-update-cursor-color)
+    (force-mode-line-update)
+    (pcase reskk-state
+      ((or 'HIRAGANA 'KATAKANA)
+        (add-hook 'pre-command-hook #'reskk-convert-force-cancel nil t))
+      (_
+        (remove-hook 'pre-command-hook #'reskk-convert-force-cancel t))
+      )
+    ))
 
 (defun reskk-activate-half-alphabet ()
   "SKKモードを半角英数モードに変更するコマンド"

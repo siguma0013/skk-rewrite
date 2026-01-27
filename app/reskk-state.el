@@ -41,6 +41,9 @@
 (defvar reskk-katakana-select-keymap (make-sparse-keymap)
   "かな変換選択中に使用するカタカナ用キーマップ")
 
+;; ステータス更新イベント用hook
+(defvar reskk-update-state-hook nil)
+
 ;; SKKモードカラー決定関数
 (defun reskk-get-color ()
   (pcase reskk-state
@@ -76,5 +79,17 @@
     ('FULL-ALPHABET " SKK[Ａ]")
     ('HIRAGANA " SKK[あ]")
     ('KATAKANA " SKK[ア]")))
+
+(defun reskk-set-state (state)
+  (setq reskk-state state)
+  (run-hooks 'reskk-update-state-hook)
+  )
+
+(defun reskk-state-shift-event ()
+  (setq reskk-convert-state
+    (pcase reskk-convert-state
+      ('NONE 'CONVERT)
+      ('CONVERT 'CONVERT-OKURIGANA)))
+  (run-hooks 'reskk-update-state-hook))
 
 (provide 'reskk-state)
