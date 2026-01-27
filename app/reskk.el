@@ -47,6 +47,8 @@
 (keymap-set reskk-hiragana-select-keymap "C-j" #'reskk-insert-convert-confirm)
 
 (define-key reskk-hiragana-convert-keymap [remap self-insert-command] #'reskk-insert-convert)
+(define-key reskk-hiragana-convert-keymap [remap delete-backward-char] #'reskk-backward-char)
+(define-key reskk-hiragana-convert-keymap [remap backward-delete-char-untabify] #'reskk-backward-char)
 
 (cl-loop for count from ?a to ?z do
   (message "KEY:%d => %s" count (char-to-string count))

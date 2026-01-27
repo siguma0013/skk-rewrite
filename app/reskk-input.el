@@ -34,6 +34,16 @@
         (insert (reskk-convert-hiragana-to-katakana value))
         ))))
 
+;; オーバーレイ更新処理
+(defun reskk-update-overlay ()
+  (reskk-display-overlay-marker (reskk-get-marker))
+
+  (let* ((fragment (concat (reskk-get-separater) reskk-input-fragment)))
+    (message "DISPLAY-FRAGMENT:%s" fragment)
+    ;; 表示するfragmentがseparaterと一緒だったら表示すべきものはない
+    (reskk-display-overlay-fragment (if (string= fragment (reskk-get-separater)) nil fragment)))
+  )
+
 ;; ひらがなorカタカナ入力関数
 (defun reskk-insert-kana (call-back)
   (let* ((keycode last-command-event)       ; キーコード
@@ -53,7 +63,7 @@
           fragment)))
     )
 
-  (reskk-display-overlay-fragment reskk-input-fragment)
+  (reskk-update-overlay)
   )
 
 (defun reskk-shift-insert ()
@@ -80,12 +90,7 @@
     (message "FRAGMENT:%s" reskk-input-fragment)
     )
 
-  (let* ((fragment (concat (reskk-get-separater) reskk-input-fragment)))
-    (reskk-display-overlay-fragment (if (string= fragment (reskk-get-separater))
-                                      nil
-                                      fragment
-                                      )))
-  (reskk-display-overlay-marker (reskk-get-marker))
+  (reskk-update-overlay)
   )
 
 (defun reskk-insert-convert ()
@@ -106,12 +111,7 @@
           fragment)))
     )
 
-  (let* ((fragment (concat (reskk-get-separater) reskk-input-fragment)))
-    (reskk-display-overlay-fragment (if (string= fragment (reskk-get-separater))
-                                      nil
-                                      fragment
-                                      )))
-  (reskk-display-overlay-marker (reskk-get-marker))
+  (reskk-update-overlay)
   )
 
 (defun reskk-insert-convert-start ()
@@ -120,10 +120,10 @@
   (let* ((kana (buffer-substring-no-properties (reskk-get-overlay-start) (point)))
           (kanji "漢字"))
     (message "%s" kanji)
+    (setq reskk-input-fragment nil)
     (setq reskk-convert-kanji-buffer kanji)
 
-    (reskk-display-overlay-fragment nil)
-    (reskk-display-overlay-marker (reskk-get-marker))
+    (reskk-update-overlay)
     (reskk-display-overlay-option kanji)
     )
   )
@@ -177,7 +177,7 @@
     ;; 変換中バッファに文字列がある時
     (let* ((fragment (substring reskk-input-fragment 0 -1)))
       (setq reskk-input-fragment fragment)
-      (reskk-display-overlay-fragment reskk-input-fragment))
+      (reskk-update-overlay))
     ;; 変換中バッファが空の時
     (call-interactively #'delete-backward-char)
     )
@@ -186,7 +186,7 @@
 ;; 変換中バッファ削除関数
 (defun reskk-clear-buffer ()
   (setq reskk-input-fragment nil)
-  (reskk-display-overlay-fragment nil)
+  (reskk-update-overlay)
   )
 
 (provide 'reskk-input)
