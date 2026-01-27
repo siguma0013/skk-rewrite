@@ -9,9 +9,6 @@
 (require 'reskk-dictionary)
 (require 'reskk-state)
 
-;; 漢変換ポイント
-(defvar-local reskk-convert-point nil)
-
 ;; かな漢字変換中バッファ
 (defvar-local reskk-convert-kanji-buffer nil)
 
@@ -82,11 +79,6 @@
           (fragment (concat (reskk-get-overlay-fragment) char)) ; かな変換中文字列
           (node (reskk-find-node fragment))) ; 木構造の検索結果
 
-    (unless reskk-convert-point
-      (setq reskk-convert-point (point)))
-
-    (message "%s" reskk-convert-point)
-
     (setq reskk-input-fragment
       (cond
         ((null node)       ; ノードが取得できなかったとき
@@ -104,11 +96,8 @@
 
 (defun reskk-insert-convert-start ()
   (interactive)
-  (message "%s" reskk-convert-point)
-  (message "%s" (point))
-
   ;; 試作のため、固定で差し替え
-  (let* ((kana (buffer-substring-no-properties reskk-convert-point (point)))
+  (let* ((kana (buffer-substring-no-properties (reskk-get-overlay-start) (point)))
           (kanji "漢字"))
     (message "%s" kanji)
     (setq reskk-convert-kanji-buffer kanji)
@@ -122,19 +111,18 @@
 (defun reskk-insert-convert-confirm ()
   (interactive)
 
-  (let* ((end-marker (copy-marker reskk-convert-point)))
+  (let* ((end-marker (copy-marker (reskk-get-overlay-start))))
     ;; カーソルの挙動定義
     (set-marker-insertion-type end-marker t)
 
     ;; 文字列置換
-    (replace-region-contents reskk-convert-point (point)
+    (replace-region-contents (reskk-get-overlay-start) (point)
       (lambda ()
         (set-marker end-marker (point))
         reskk-convert-kanji-buffer))
     ;; カーソル移動
     (goto-char end-marker))
 
-  (setq reskk-convert-point nil)
   (setq reskk-convert-kanji-buffer nil)
 
   (reskk-reset-convert-state)
