@@ -15,6 +15,9 @@
 ;; かな漢字変換中バッファ
 (defvar-local reskk-convert-kanji-buffer nil)
 
+;; フラグメントバッファ
+(defvar-local reskk-input-fragment nil)
+
 (defun reskk-insert ()
   "単純変換入力コマンド"
   (interactive)
@@ -22,6 +25,7 @@
           (char (char-to-string keycode))
           (node (reskk-find-node char)))
     ;; バッファを完全リセット
+    (setq reskk-input-fragment nil)
     (reskk-display-overlay-fragment nil)
     (if node
       ;; ノードが取得できたとき
@@ -53,20 +57,22 @@
 (defun reskk-insert-kana (call-back)
   (let* ((keycode last-command-event)       ; キーコード
           (char (char-to-string keycode))   ; 入力文字列
-          (fragment (concat (reskk-get-overlay-fragment) char)) ; かな変換中文字列
+          (fragment (concat reskk-input-fragment char)) ; かな変換中文字列
           (node (reskk-find-node fragment))) ; 木構造の検索結果
     (message "HIT: %d => %s" keycode char)
 
-    (cond
-      ((null node)                      ; ノードが取得できなかったとき
-        (reskk-display-overlay-fragment char))
-      ((reskk-tree-is-leaf node)        ; ノードが末端のとき
-        (funcall call-back node)
-        (reskk-display-overlay-fragment (reskk-tree-node-pending node)))
-      (t                                ; ノードが途中のとき
-        (reskk-display-overlay-fragment fragment))
-      )
+    (setq reskk-input-fragment
+      (cond
+        ((null node)                    ; ノードが取得できなかったとき
+          char)
+        ((reskk-tree-is-leaf node)      ; ノードが末端のとき
+          (funcall call-back node)
+          (reskk-tree-node-pending node))
+        (t                              ; ノードが途中のとき
+          fragment)))
     )
+
+  (reskk-display-overlay-fragment reskk-input-fragment)
   )
 
 (defun reskk-insert-convert ()
@@ -81,17 +87,18 @@
 
     (message "%s" reskk-convert-point)
 
-    (cond
-      ((null node)                      ; ノードが取得できなかったとき
-        (reskk-display-overlay-fragment char))
-      ((reskk-tree-is-leaf node)        ; ノードが末端のとき
-        (insert (reskk-tree-node-value node))
-        (reskk-display-overlay-fragment (reskk-tree-node-pending node)))
-      (t                                ; ノードが途中のとき
-        (reskk-display-overlay-fragment fragment))
-      )
+    (setq reskk-input-fragment
+      (cond
+        ((null node)       ; ノードが取得できなかったとき
+          char)
+        ((reskk-tree-is-leaf node)      ; ノードが末端のとき
+          (insert (reskk-tree-node-value node))
+          (reskk-tree-node-pending node))
+        (t                   ; ノードが途中のとき
+          fragment)))
     )
 
+  (reskk-display-overlay-fragment reskk-input-fragment)
   (reskk-display-overlay-marker (reskk-get-marker))
   )
 
@@ -158,10 +165,11 @@
   "delete-backward-charのオーバーライド関数"
   (interactive)
 
-  (if (> (length (reskk-get-overlay-fragment)) 0)
+  (if (> (length reskk-input-fragment) 0)
     ;; 変換中バッファに文字列がある時
-    (let* ((fragment (substring (reskk-get-overlay-fragment) 0 -1)))
-      (reskk-display-overlay-fragment fragment))
+    (let* ((fragment (substring reskk-input-fragment 0 -1)))
+      (setq reskk-input-fragment fragment)
+      (reskk-display-overlay-fragment reskk-input-fragment))
     ;; 変換中バッファが空の時
     (call-interactively #'delete-backward-char)
     )
@@ -169,6 +177,7 @@
 
 ;; 変換中バッファ削除関数
 (defun reskk-clear-buffer ()
+  (setq reskk-input-fragment nil)
   (reskk-display-overlay-fragment nil)
   )
 
