@@ -59,6 +59,7 @@
       (pcase reskk-convert-state
         ('NONE reskk-hiragana-keymap)
         ('CONVERT reskk-hiragana-convert-keymap)
+        ('CONVERT-OKURIGANA reskk-hiragana-convert-keymap)
         ('SELECT reskk-hiragana-select-keymap)
         )
       )
@@ -85,7 +86,14 @@
   (pcase reskk-convert-state
     ('CONVERT "▽")
     ('CONVERT-OKURIGANA "▽")
-    ('SELECT "▼")))
+    ('SELECT "▼")
+    (t nil)))
+
+;; separater決定関数
+(defun reskk-get-separater ()
+  (pcase reskk-convert-state
+    ('CONVERT-OKURIGANA "*")
+    (t nil)))
 
 (defun reskk-set-state (state)
   (setq reskk-state state)
@@ -93,11 +101,12 @@
   )
 
 (defun reskk-state-shift-event ()
-  (setq reskk-convert-state
-    (pcase reskk-convert-state
-      ('NONE 'CONVERT)
-      ('CONVERT 'CONVERT-OKURIGANA)))
-  (run-hooks 'reskk-update-state-hook))
+  (when (memq reskk-convert-state '(NONE CONVERT))
+    (setq reskk-convert-state
+      (pcase reskk-convert-state
+        ('NONE 'CONVERT)
+        ('CONVERT 'CONVERT-OKURIGANA)))
+    (run-hooks 'reskk-update-state-hook)))
 
 (defun reskk-reset-convert-state ()
   (setq reskk-convert-state 'NONE)

@@ -72,11 +72,43 @@
   (reskk-display-overlay-fragment reskk-input-fragment)
   )
 
+(defun reskk-shift-insert ()
+  (interactive)
+  (reskk-state-shift-event)
+
+  (let* ((keycode last-command-event)       ; キーコード
+          (char (char-to-string (reskk-convert-upper-to-lower keycode))) ; 入力文字列
+          (fragment (concat reskk-input-fragment char)) ; かな変換中文字列
+          (node (reskk-find-node fragment))) ; 木構造の検索結果
+
+    (setq reskk-input-fragment
+      (cond
+        ((null node)       ; ノードが取得できなかったとき
+          char)
+        ((reskk-tree-is-leaf node)      ; ノードが末端のとき
+          (insert (reskk-tree-node-value node))
+          (reskk-tree-node-pending node))
+        (t                   ; ノードが途中のとき
+          fragment)))
+
+    (message "KEYCODE:%s" keycode)
+    (message "CHAR:%s" char)
+    (message "FRAGMENT:%s" reskk-input-fragment)
+    )
+
+  (let* ((fragment (concat (reskk-get-separater) reskk-input-fragment)))
+    (reskk-display-overlay-fragment (if (string= fragment (reskk-get-separater))
+                                      nil
+                                      fragment
+                                      )))
+  (reskk-display-overlay-marker (reskk-get-marker))
+  )
+
 (defun reskk-insert-convert ()
   (interactive)
   (let* ((keycode last-command-event)   ; キーコード
           (char (char-to-string (reskk-convert-upper-to-lower keycode))) ; 入力文字列
-          (fragment (concat (reskk-get-overlay-fragment) char)) ; かな変換中文字列
+          (fragment (concat reskk-input-fragment char)) ; かな変換中文字列
           (node (reskk-find-node fragment))) ; 木構造の検索結果
 
     (setq reskk-input-fragment
@@ -90,7 +122,11 @@
           fragment)))
     )
 
-  (reskk-display-overlay-fragment reskk-input-fragment)
+  (let* ((fragment (concat (reskk-get-separater) reskk-input-fragment)))
+    (reskk-display-overlay-fragment (if (string= fragment (reskk-get-separater))
+                                      nil
+                                      fragment
+                                      )))
   (reskk-display-overlay-marker (reskk-get-marker))
   )
 

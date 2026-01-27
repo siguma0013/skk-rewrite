@@ -56,7 +56,8 @@
   )
 (cl-loop for count from ?A to ?Z do
   (message "KEY:%d => %s" count (char-to-string count))
-  (define-key reskk-hiragana-keymap (char-to-string count) #'reskk-activate-convert)
+  (define-key reskk-hiragana-keymap (char-to-string count) #'reskk-shift-insert)
+  (define-key reskk-hiragana-convert-keymap (char-to-string count) #'reskk-shift-insert)
   )
 
 (progn
