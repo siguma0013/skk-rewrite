@@ -66,8 +66,46 @@
   (reskk-update-overlay)
   )
 
+;; 変換モード向け入力関数
+(defun reskk-convert-insert ()
+  (interactive)
+  (message "[Re:skk-mode] reskk-convert-insert")
+
+  (let* ((char (char-to-string last-command-event))
+          (old-fragment reskk-input-fragment)
+          (new-fragment (concat reskk-input-fragment char))
+          (node (reskk-find-node new-fragment)))
+
+    (message "OLD-FRAGMENT:%s" old-fragment)
+    (message "NEW-FRAGMENT:%s" new-fragment)
+
+    (setq reskk-input-fragment
+      (cond
+        ((null node)                    ; ノードが取得できなかったとき
+          char)
+        ((reskk-tree-is-leaf node)      ; ノードが末端のとき
+          (insert (reskk-tree-node-value node))
+          (reskk-tree-node-pending node))
+        (t                              ; ノードが途中のとき
+          new-fragment)))
+
+    (when-let* ((is-auto-convert (and (reskk-is-convert-okurigana) (null reskk-input-fragment)))
+                 (display-word (buffer-substring-no-properties (reskk-get-overlay-start) (- (point) 1)))
+                 (search-word (concat display-word old-fragment)))
+      ;; 自動変換のタイミング
+      (message "AUTO-CONVERT")
+      (message "DISPLAY-WORD:%s" display-word)
+      (message "SEARCH-WORD:%s" search-word)
+      )
+    )
+
+  (reskk-update-overlay)
+  )
+
 (defun reskk-shift-insert ()
   (interactive)
+  (message "[Re:skk-mode] reskk-shift-insert")
+
   (reskk-state-shift-event)
 
   (let* ((keycode last-command-event)       ; キーコード

@@ -95,6 +95,9 @@
     ('CONVERT-OKURIGANA "*")
     (t nil)))
 
+(defun reskk-is-convert-okurigana ()
+  (eq 'CONVERT-OKURIGANA reskk-convert-state))
+
 (defun reskk-set-state (state)
   (setq reskk-state state)
   (run-hooks 'reskk-update-state-hook)
