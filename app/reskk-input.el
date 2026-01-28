@@ -93,27 +93,6 @@
   (reskk-update-overlay)
   )
 
-(defun reskk-insert-convert ()
-  (interactive)
-  (let* ((keycode last-command-event)   ; キーコード
-          (char (char-to-string (reskk-convert-upper-to-lower keycode))) ; 入力文字列
-          (fragment (concat reskk-input-fragment char)) ; かな変換中文字列
-          (node (reskk-find-node fragment))) ; 木構造の検索結果
-
-    (setq reskk-input-fragment
-      (cond
-        ((null node)       ; ノードが取得できなかったとき
-          char)
-        ((reskk-tree-is-leaf node)      ; ノードが末端のとき
-          (insert (reskk-tree-node-value node))
-          (reskk-tree-node-pending node))
-        (t                   ; ノードが途中のとき
-          fragment)))
-    )
-
-  (reskk-update-overlay)
-  )
-
 (defun reskk-insert-convert-start ()
   (interactive)
   ;; 試作のため、固定で差し替え

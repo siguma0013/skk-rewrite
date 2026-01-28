@@ -39,6 +39,7 @@
 (declare-function reskk-activate-half-alphabet nil)
 
 ;; 削除系コマンドのオーバーライド
+(define-key reskk-hiragana-keymap [remap self-insert-command] #'reskk-insert-hiragana)
 (define-key reskk-hiragana-keymap [remap delete-backward-char] #'reskk-backward-char)
 (define-key reskk-hiragana-keymap [remap backward-delete-char-untabify] #'reskk-backward-char)
 
@@ -46,7 +47,7 @@
 (keymap-set reskk-hiragana-convert-keymap "C-j" #'reskk-activate-start)
 (keymap-set reskk-hiragana-select-keymap "C-j" #'reskk-insert-convert-confirm)
 
-(define-key reskk-hiragana-convert-keymap [remap self-insert-command] #'reskk-insert-convert)
+(define-key reskk-hiragana-convert-keymap [remap self-insert-command] #'reskk-insert-hiragana)
 (define-key reskk-hiragana-convert-keymap [remap delete-backward-char] #'reskk-backward-char)
 (define-key reskk-hiragana-convert-keymap [remap backward-delete-char-untabify] #'reskk-backward-char)
 
@@ -100,7 +101,6 @@
                                 reskk-insert-hiragana
                                 reskk-insert-katakana
                                 reskk-backward-char
-                                reskk-insert-convert
                                 reskk-activate-convert
                                 reskk-activate-start
                                 reskk-insert-convert-confirm
@@ -136,13 +136,6 @@
   "SKKモードをカタカナモードに変更するコマンド"
   (interactive)
   (reskk-set-state 'KATAKANA))
-
-(defun reskk-activate-convert ()
-  (interactive)
-  (setq reskk-convert-state 'CONVERT)
-  (reskk-set-state 'HIRAGANA)
-  (reskk-insert-convert)
-  )
 
 (defun reskk-activate-start ()
   (interactive)
