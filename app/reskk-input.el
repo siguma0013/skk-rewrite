@@ -161,16 +161,21 @@
 
 (defun reskk-insert-convert-start ()
   (interactive)
-  ;; 試作のため、固定で差し替え
-  (let* ((kana (buffer-substring-no-properties (reskk-get-overlay-start) (point)))
-          (kanji "漢字"))
-    (message "%s" kanji)
-    (setq reskk-input-fragment nil)
-    (setq reskk-convert-kanji-buffer kanji)
 
-    (reskk-update-overlay)
-    (reskk-display-overlay-option kanji)
+  (when-let* ((search-word (buffer-substring-no-properties (reskk-get-overlay-start) (point))))
+    ;; 状態遷移
+    (reskk-state-select-event)
+
+    ;; 辞書検索
+    (setq reskk-input-options (reskk-search-dictionary search-word))
+
+    (when reskk-input-options
+      (setq reskk-input-option-index 0)
+      (setq reskk-input-option (nth reskk-input-option-index reskk-input-options))
+      )
     )
+
+  (reskk-update-overlay)
   )
 
 ;; 漢字変換確定関数
