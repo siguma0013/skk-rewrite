@@ -104,6 +104,8 @@
                                 reskk-activate-convert
                                 reskk-activate-start
                                 reskk-insert-convert-confirm
+                                reskk-convert-insert
+                                reskk-shift-insert
                                 ))
     (reskk-clear-buffer))
   )
@@ -111,6 +113,10 @@
 (add-hook
   'reskk-update-state-hook
   (lambda ()
+    (message "UPDATE Re:skk-mod STATUS")
+    (message "STATE:%s" reskk-state)
+    (message "CONVERT-STATE:%s" reskk-convert-state)
+
     (reskk-update-keymap)
     (reskk-update-cursor-color)
     (force-mode-line-update)

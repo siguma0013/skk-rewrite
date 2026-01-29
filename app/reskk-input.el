@@ -12,6 +12,15 @@
 ;; かな漢字変換中バッファ
 (defvar-local reskk-convert-kanji-buffer nil)
 
+;; 漢字変換選択肢リスト
+(defvar-local reskk-input-options nil)
+
+;; 漢字変換選択肢インデックス
+(defvar-local reskk-input-option-index nil)
+
+;; 漢字変換選択肢
+(defvar-local reskk-input-option nil)
+
 ;; フラグメントバッファ
 (defvar-local reskk-input-fragment nil)
 
@@ -37,6 +46,8 @@
 ;; オーバーレイ更新処理
 (defun reskk-update-overlay ()
   (reskk-display-overlay-marker (reskk-get-marker))
+
+  (reskk-display-overlay-option reskk-input-option)
 
   (let* ((fragment (concat (reskk-get-separater) reskk-input-fragment)))
     (message "DISPLAY-FRAGMENT:%s" fragment)
@@ -90,12 +101,29 @@
           new-fragment)))
 
     (when-let* ((is-auto-convert (and (reskk-is-convert-okurigana) (null reskk-input-fragment)))
-                 (display-word (buffer-substring-no-properties (reskk-get-overlay-start) (- (point) 1)))
-                 (search-word (concat display-word old-fragment)))
+                 (display-word (buffer-substring-no-properties (reskk-get-overlay-start) (point)))
+                 (search-word (concat (substring display-word 0 -1) old-fragment)))
       ;; 自動変換のタイミング
       (message "AUTO-CONVERT")
       (message "DISPLAY-WORD:%s" display-word)
       (message "SEARCH-WORD:%s" search-word)
+
+      ;; 状態遷移
+      (reskk-state-select-event)
+
+      ;; 辞書検索
+      (setq reskk-input-options (reskk-search-dictionary search-word))
+
+      (when reskk-input-options
+        ;; 変換リストのインデックスの初期化
+        (setq reskk-input-option-index 0)
+        (setq reskk-input-option
+          (concat
+            (nth reskk-input-option-index reskk-input-options)
+            (substring display-word -1 (length display-word))
+            )
+          )
+        )
       )
     )
 
@@ -145,6 +173,7 @@
     )
   )
 
+;; 漢字変換確定関数
 (defun reskk-insert-convert-confirm ()
   (interactive)
 
@@ -153,14 +182,14 @@
     (set-marker-insertion-type end-marker t)
 
     ;; 文字列置換
-    (replace-region-contents (reskk-get-overlay-start) (point)
+    (replace-region-contents (reskk-get-overlay-start) (reskk-get-overlay-end)
       (lambda ()
-        (set-marker end-marker (point))
-        reskk-convert-kanji-buffer))
+        (set-marker end-marker (reskk-get-overlay-end))
+        reskk-input-option))
     ;; カーソル移動
     (goto-char end-marker))
 
-  (setq reskk-convert-kanji-buffer nil)
+  (setq reskk-input-option nil)
 
   (reskk-reset-convert-state)
   (reskk-reset-overlay)

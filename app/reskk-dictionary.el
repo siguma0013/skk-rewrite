@@ -36,6 +36,10 @@
     )
   )
 
+;; 辞書検索関数
+(defun reskk-search-dictionary (key)
+  (gethash key reskk-dictionary))
+
 (reskk-dictionary-parse reskk-dictionary-file-path
   (lambda (obj)
     (let ((key (alist-get 'key obj))

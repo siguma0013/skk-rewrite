@@ -13,6 +13,11 @@
   (when (overlayp reskk-overlay)
     (overlay-start reskk-overlay)))
 
+;; オーバーレイアクセサ：終了位置
+(defun reskk-get-overlay-end ()
+  (when (overlayp reskk-overlay)
+    (overlay-end reskk-overlay)))
+
 ;; オーバーレイアクセサ：'marker'
 (defun reskk-get-overlay-marker ()
   (when-let* ((overlayp reskk-overlay)
@@ -75,7 +80,13 @@
 
 (defun reskk-display-overlay-option (text)
   (reskk-make-overlay)
-  (overlay-put reskk-overlay 'display (propertize (or text "") 'face `(:background "cyan"))))
+  (if text
+    ;; 非nil
+    (overlay-put reskk-overlay 'display (propertize text 'face `(:background "cyan")))
+    ;; nil
+    (overlay-put reskk-overlay 'display nil)
+    )
+  )
 
 (defun reskk-display-overlay-fragment (text)
   (reskk-make-overlay)
