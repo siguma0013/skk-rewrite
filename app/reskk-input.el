@@ -21,6 +21,9 @@
 ;; 漢字変換選択肢
 (defvar-local reskk-input-option nil)
 
+;; 送り仮名
+(defvar-local reskk-input-okurigana nil)
+
 ;; フラグメントバッファ
 (defvar-local reskk-input-fragment nil)
 
@@ -114,13 +117,16 @@
       ;; 辞書検索
       (setq reskk-input-options (reskk-search-dictionary search-word))
 
+      ;; 送り仮名
+      (setq reskk-input-okurigana (substring display-word -1 (length display-word)))
+
       (when reskk-input-options
         ;; 変換リストのインデックスの初期化
         (setq reskk-input-option-index 0)
         (setq reskk-input-option
           (concat
             (nth reskk-input-option-index reskk-input-options)
-            (substring display-word -1 (length display-word))
+            reskk-input-okurigana
             )
           )
         )
@@ -195,9 +201,54 @@
     (goto-char end-marker))
 
   (setq reskk-input-option nil)
+  (setq reskk-input-okurigana nil)
 
   (reskk-reset-convert-state)
   (reskk-reset-overlay)
+  )
+
+(defun reskk-select-next-convert ()
+  (interactive)
+  (message "[Re:skk-mode]reskk-select-next-convert")
+  (message "CURRENT-INDEX:%s" reskk-input-option-index)
+
+  (when-let* ((next-index (1+ reskk-input-option-index))
+               (is-within (< next-index (length reskk-input-options))))
+    (setq reskk-input-option-index next-index)
+
+    (message "UPDATE-INDEX:%s" reskk-input-option-index)
+
+    (setq reskk-input-option
+      (concat
+        (nth reskk-input-option-index reskk-input-options)
+        reskk-input-okurigana
+        )
+      )
+    )
+
+  (reskk-update-overlay)
+  )
+
+(defun reskk-select-prev-convert ()
+  (interactive)
+  (message "[Re:skk-mode]reskk-select-prev-convert")
+  (message "CURRENT-INDEX:%s" reskk-input-option-index)
+
+  (when-let* ((prev-index (1- reskk-input-option-index))
+               (is-within (>= prev-index 0)))
+    (setq reskk-input-option-index prev-index)
+
+    (message "UPDATE-INDEX:%s" reskk-input-option-index)
+
+    (setq reskk-input-option
+      (concat
+        (nth reskk-input-option-index reskk-input-options)
+        reskk-input-okurigana
+        )
+      )
+    )
+
+  (reskk-update-overlay)
   )
 
 ;; ひらがなをカタカナに変換する関数

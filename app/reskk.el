@@ -46,6 +46,8 @@
 (keymap-set reskk-half-alphabet-keymap "C-j" #'reskk-activate-hiragana)
 (keymap-set reskk-hiragana-convert-keymap "C-j" #'reskk-activate-start)
 (keymap-set reskk-hiragana-select-keymap "C-j" #'reskk-insert-convert-confirm)
+(keymap-set reskk-hiragana-select-keymap "C-n" #'reskk-select-next-convert)
+(keymap-set reskk-hiragana-select-keymap "C-p" #'reskk-select-prev-convert)
 
 (define-key reskk-hiragana-convert-keymap [remap self-insert-command] #'reskk-convert-insert)
 (define-key reskk-hiragana-convert-keymap [remap delete-backward-char] #'reskk-backward-char)
@@ -106,6 +108,8 @@
                                 reskk-insert-convert-confirm
                                 reskk-convert-insert
                                 reskk-shift-insert
+                                reskk-select-prev-convert
+                                reskk-select-next-convert
                                 ))
     (reskk-clear-buffer))
   )
